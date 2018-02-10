@@ -1,19 +1,21 @@
 ﻿#include "Main.h"
 #include "Character.h"
+#include "Map.h"
 
 int gpUpdateKey();
 int KeyCalc_menu(int SelectNum);
 void Draw_menu();
 void KeyCalc(Character& c);
+void Draw_game();
+
 using namespace std;
 
 int Key[256];// キーが押されているフレーム数を格納する
-MenuElement_t MainMenu[2] = {
-	{ 500, 500, "ゲームスタート", 1 }, // タグの中身の順番で格納される。xに80が、yに100が、nameに"ゲームスタート"が
-    { 500, 550, "ゲーム終了", 0 },
-};
 
-// プログラムは WinMain から始まります
+
+/*****
+メイン関数
+*****/
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	/*****初期設定*****/
@@ -28,10 +30,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	int SelectNum = 0; // 現在の選択メニュー番号
 
-
-	// 画面に絵を表示
+	// 画面に絵をロード
 	Character myCharacter;
-	myCharacter.handle = LoadGraph("images/mycharacter.png"); // 画像をロード
+	myCharacter.handle = LoadGraph("images/mycharacter2.png"); // 画像をロード
+	int a = myCharacter.handle;
+
+	MapElement MapChips[2] = {
+		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
+		{ LoadGraph("images/tree.png"), 1 }, //マップ番号２：木
+	};
 
 	//ゲームモード選択フラグ
 	int WinFlag = 0;
@@ -52,6 +59,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			break;
 		case 1://ゲーム画面
 			KeyCalc(myCharacter); //自キャラのキー入力
+			Draw_game();
+			Draw_map(MapChips); //マップチップの描画
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
 			break;
 		default:
@@ -67,7 +76,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 
 
-// キーの入力状態を更新する
+/*****
+=====================================
+キー入力を更新する関数
+=====================================
+引数
+なし
+=====================================
+戻り値 0
+=====================================
+*****/
 int gpUpdateKey() {
 	char tmpKey[256]; // 現在のキーの入力状態を格納する
 	GetHitKeyStateAll(tmpKey); // 全てのキーの入力状態を得る
@@ -82,6 +100,19 @@ int gpUpdateKey() {
 	return 0;
 }
 
+
+/*****
+=====================================
+メニュー画面のキー入力 : int KeyCalc_menu(int SelectNum)
+=====================================
+引数 
+int SelectNum : 現在選択中のメニュー
+=====================================
+戻り値
+1 : ゲームスタートが選択されたとき
+-1 : ゲーム終了が選択されたとき
+=====================================
+*****/
 int KeyCalc_menu(int SelectNum)
 {
 	if (Key[KEY_INPUT_DOWN] == 1) { // 上キーが押された瞬間だけ処理
@@ -111,15 +142,39 @@ int KeyCalc_menu(int SelectNum)
 	return 0;
 }
 
+/*****
+=====================================
+メニューの文字を表示 : void Draw_menu()
+=====================================
+引数
+なし
+=====================================
+戻り値
+なし
+=====================================
+*****/
 void Draw_menu()
 {
+	SetFontSize(64); // 描画する文字列のサイズを設定
+	SetFontThickness(3); // 描画する文字列の太さを設定
 	for (int i = 0; i<2; i++) { // メニュー項目を描画
 		if(MainMenu[i].flag == 0) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(0, 0, 0), MainMenu[i].name);
 		else if (MainMenu[i].flag == 1) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(255, 0, 0), MainMenu[i].name);
 	}
 }
 
-//キーの入力処理
+/*****
+=====================================
+自分のキャラクタを操作 : void KeyCalc(Character& c)
+=====================================
+引数
+Character& c : 自分のキャラクタのオブジェクト
+=====================================
+戻り値
+なし
+=====================================
+*****/
+
 void KeyCalc(Character& c) {
 	if (Key[KEY_INPUT_RIGHT] >= 1) {
 		c.pos.x += 5;
@@ -133,4 +188,28 @@ void KeyCalc(Character& c) {
 	if (Key[KEY_INPUT_UP] >= 1) {
 		c.pos.y -= 5;
 	}
+
+	if (c.pos.x <= 0) c.pos.x = 0;
+	if (MAP_WIDTH*CHIP_SIZE <= (c.pos.x + CHIP_SIZE)) c.pos.x = MAP_WIDTH*CHIP_SIZE - CHIP_SIZE;
+	if (c.pos.y <= 0) c.pos.y = 0;
+	if (MAP_HEIGHT*CHIP_SIZE <= (c.pos.y + CHIP_SIZE)) c.pos.y = MAP_HEIGHT*CHIP_SIZE - CHIP_SIZE;
+}
+
+
+/*****
+=====================================
+ゲーム画面生成 : void Draw_game()
+=====================================
+引数
+なし
+=====================================
+戻り値
+なし
+=====================================
+*****/
+void Draw_game()
+{
+	//ステータス画面用のウィンドウ
+	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
+
 }
