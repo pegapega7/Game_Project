@@ -5,8 +5,8 @@
 int gpUpdateKey();
 int KeyCalc_menu(int SelectNum);
 void Draw_menu();
-void KeyCalc(Character& c);
-void Draw_game();
+void KeyCalc(Character& c, MapElement map[]);
+void Draw_game(Character& c);
 
 using namespace std;
 
@@ -31,9 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int SelectNum = 0; // 現在の選択メニュー番号
 
 	// 画面に絵をロード
-	Character myCharacter;
-	myCharacter.handle = LoadGraph("images/mycharacter2.png"); // 画像をロード
-	int a = myCharacter.handle;
+	Character myCharacter({ 5 * CHIP_SIZE, 11*CHIP_SIZE}, LoadGraph("images/mycharacter2.png"), 1, 0);
 
 	MapElement MapChips[2] = {
 		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
@@ -58,8 +56,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Draw_menu();//メニュー描画
 			break;
 		case 1://ゲーム画面
-			KeyCalc(myCharacter); //自キャラのキー入力
-			Draw_game();
+			KeyCalc(myCharacter, MapChips); //自キャラのキー入力
+			Draw_game(myCharacter);
 			Draw_map(MapChips); //マップチップの描画
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
 			break;
@@ -158,8 +156,8 @@ void Draw_menu()
 	SetFontSize(64); // 描画する文字列のサイズを設定
 	SetFontThickness(3); // 描画する文字列の太さを設定
 	for (int i = 0; i<2; i++) { // メニュー項目を描画
-		if(MainMenu[i].flag == 0) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(0, 0, 0), MainMenu[i].name);
-		else if (MainMenu[i].flag == 1) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(255, 0, 0), MainMenu[i].name);
+		if(MainMenu[i].flag == 0) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(0, 0, 0), MainMenu[i].name.c_str());
+		else if (MainMenu[i].flag == 1) DrawFormatString(MainMenu[i].x, MainMenu[i].y, GetColor(255, 0, 0), MainMenu[i].name.c_str());
 	}
 }
 
@@ -175,24 +173,89 @@ Character& c : 自分のキャラクタのオブジェクト
 =====================================
 *****/
 
-void KeyCalc(Character& c) {
-	if (Key[KEY_INPUT_RIGHT] >= 1) {
-		c.pos.x += 5;
-	}
-	if (Key[KEY_INPUT_DOWN] >= 1) {
-		c.pos.y += 5;
-	}
-	if (Key[KEY_INPUT_LEFT] >= 1) {
-		c.pos.x -= 5;
-	}
-	if (Key[KEY_INPUT_UP] >= 1) {
-		c.pos.y -= 5;
+void KeyCalc(Character& c, MapElement map[]) {
+	
+	//移動可能かどうか判定
+	/*
+		c.move_f = 1;
+		if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
+			c.move_v = 0;
+		}
+		else if (Key[KEY_INPUT_DOWN] >= 1) {
+			c.move_v = 1;
+		}
+		else if (Key[KEY_INPUT_LEFT] >= 1) {
+			c.move_v = 2;
+		}
+		else if (Key[KEY_INPUT_UP] >= 1) {
+			c.move_v = 3;
+		}
+		else c.move_f = 0;
+
+
+	if (c.move_f == 1) {
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		//if(hitmap_f == 1) c.pos = old
+			c.move_f = 0;
+		}
 	}
 
+
+	//自キャラクタの移動
+	if (c.move_f == 1) {
+		if (Key[KEY_INPUT_RIGHT] >= 1) {
+			c.pos.x += 4;
+		}
+		if (Key[KEY_INPUT_DOWN] >= 1) {
+			c.pos.y += 4;
+		}
+		if (Key[KEY_INPUT_LEFT] >= 1) {
+			c.pos.x -= 4;
+		}
+		if (Key[KEY_INPUT_UP] >= 1) {
+			c.pos.y -= 4;
+		}
+	}
+	*/
+
+	
+	//自キャラクタの移動
+	//移動可能かどうか判定
+	Pos oldp = c.pos;//移動計算前の座標保存
+	if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
+		c.move_v = 0;
+	    c.pos.x += 4;
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+			c.pos.x = oldp.x;
+		}
+	}
+    if (Key[KEY_INPUT_DOWN] >= 1) {
+		c.move_v = 1;
+		c.pos.y += 4;
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		 	c.pos.y = oldp.y;
+		}
+	}
+	if (Key[KEY_INPUT_LEFT] >= 1) {
+		c.move_v = 2;
+		c.pos.x -= 4;
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+			c.pos.x = oldp.x;
+		}
+	}
+	 if (Key[KEY_INPUT_UP] >= 1) {
+		c.move_v = 3;
+		c.pos.y -= 4;
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+			c.pos.y = oldp.y;
+		}
+	}
+
+	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
-	if (MAP_WIDTH*CHIP_SIZE <= (c.pos.x + CHIP_SIZE)) c.pos.x = MAP_WIDTH*CHIP_SIZE - CHIP_SIZE;
+	if ((MAP_WIDTH-1)*CHIP_SIZE <= c.pos.x) c.pos.x = (MAP_WIDTH-1)*CHIP_SIZE;
 	if (c.pos.y <= 0) c.pos.y = 0;
-	if (MAP_HEIGHT*CHIP_SIZE <= (c.pos.y + CHIP_SIZE)) c.pos.y = MAP_HEIGHT*CHIP_SIZE - CHIP_SIZE;
+	if (WINDOW_HEIGHT <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE;
 }
 
 
@@ -207,9 +270,16 @@ void KeyCalc(Character& c) {
 なし
 =====================================
 *****/
-void Draw_game()
+void Draw_game(Character& c)
 {
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
 
+	//でばっぐ用に座標を出力
+	ostringstream position;
+	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
+	//debug[0].name = position.str();
+	SetFontSize(20); // 描画する文字列のサイズを設定
+	SetFontThickness(3); // 描画する文字列の太さを設定
+	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
 }
