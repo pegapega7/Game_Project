@@ -5,10 +5,14 @@
 キャラクタ座標の初期化 : Character()
 ====================
 *****/
-Character::Character()
+Character::Character(Pos pos_init, int handle_init, int move_f_init, int move_v_init)
 {
-	pos.x = 500;
-	pos.y = 500;
+	
+	pos = pos_init;
+	handle = handle_init;
+	move_f = move_f_init;
+	move_v = move_v_init;
+	
 }
 
 /*****
