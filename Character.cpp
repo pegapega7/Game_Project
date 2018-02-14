@@ -32,3 +32,70 @@ void Character::Draw(Pos p, int handle)
 {
 	DrawGraph(p.x, p.y, handle, TRUE); //‰æ‘œ‚Ì•`‰æ
 }
+
+
+/*****
+====================
+“G‚Ì‰Šú‰»
+====================
+*****/
+Enemy::Enemy(Pos pos_init, int handle_init, int move_f_init, int move_v_init) : Character(pos_init, handle_init, move_f_init, move_v_init)
+{
+	pos = pos_init;
+	handle = handle_init;
+	move_f = move_f_init;
+	move_v = move_v_init;
+}
+/*****
+==============================
+‹ZƒNƒ‰ƒX‚Ì‰Šú‰»(ˆø”:‰æ‘œ‚Ìƒf[ƒ^ƒnƒ“ƒhƒ‹, •`‰æŠÔŠu)
+==============================
+*****/
+Skill::Skill(int handle_init, int drawinterval_init, int intervalcount_init)
+{
+	handle = handle_init;
+	drawinterval = drawinterval_init;
+	intervalcount = intervalcount_init;
+}
+
+/*****
+==========================
+‹Z‚Ì•`‰æ : Draw(Pos p, int handle, int drawinterval, int direction)
+==========================
+ˆø”
+Pos p : •\¦‚·‚éêŠ‚Ì¶ãÀ•W
+Pos dest: ‰æ‘œ‚©‚çØ‚èæ‚é‹éŒ`‚ÌÀ•W
+int Width : Ø‚èæ‚é‹éŒ`‚Ì•
+int Height : Ø‚èæ‚é‹éŒ`‚Ì‚‚³
+int handle : ‹Z‰æ‘œ‚Ìƒf[ƒ^ƒnƒ“ƒhƒ‹
+int drawinterval : ‹Z‚ğ•`‰æ‚·‚éŠÔŠu
+
+=====================================
+–ß‚è’l‚È‚µ
+==================================
+*****/
+void Skill::Draw(Pos p,int handle, int drawinterval)
+{
+	DrawGraph(p.x, p.y, handle, TRUE); //‰æ‘œ‚Ì•`‰æ
+}
+
+
+/*****
+==========================
+‹Z‚Ì•`‰æ : Draw(Pos p, int handle, int drawinterval, int direction)
+==========================
+ˆø”
+Pos p : •\¦‚·‚éêŠ‚Ì¶ãÀ•W
+Pos ep: “G‚ÌÀ•W
+=====================================
+1 : “G‚Æ“–‚½‚Á‚½”»’è
+0: “–‚½‚Á‚Ä‚¢‚È‚¢
+==================================
+*****/
+int Hit_Enemy(Pos p, Pos ep)
+{
+	//“G‚Æ‚Ì“–‚½‚è”»’è
+	if (p.x < ep.x + CHIP_SIZE-10 && p.y < ep.y + CHIP_SIZE-10 && (p.x + CHIP_SIZE) > ep.x+10 && (p.y + CHIP_SIZE) > ep.y+10)
+		return 1;
+	return 0;
+}

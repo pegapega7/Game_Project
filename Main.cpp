@@ -5,7 +5,7 @@
 int gpUpdateKey();
 int KeyCalc_menu(int SelectNum);
 void Draw_menu();
-void KeyCalc(Character& c, MapElement map[]);
+void KeyCalc(Character& c, Enemy e[],MapElement map[]);
 void Draw_game(Character& c);
 
 using namespace std;
@@ -31,7 +31,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int SelectNum = 0; // 現在の選択メニュー番号
 
 	// 画面に絵をロード
+	//キャラクタ
 	Character myCharacter({ 5 * CHIP_SIZE, 11*CHIP_SIZE}, LoadGraph("images/mycharacter2.png"), 1, 0);
+
+	//敵
+	Enemy enemy_01[3] = {
+		{{ 2 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
+		{{ 5 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
+		{{ 8 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
+	};
+	//技
+	Skill sword_1({ LoadGraph("images/sword_effect1.png") , 10, 0});
 
 	MapElement MapChips[2] = {
 		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
@@ -40,10 +50,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//ゲームモード選択フラグ
 	int WinFlag = 0;
+	int frame_count = 0;
 
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
+		frame_count++;
+		if (frame_count == 60) frame_count = 0;
 		if(ScreenFlip() != 0) break;//裏画面を表画面に反映
 		if(ProcessMessage() != 0) break;//メッセージ処理
 		if(ClearDrawScreen() != 0) break;  // 画面を消す
@@ -56,10 +69,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Draw_menu();//メニュー描画
 			break;
 		case 1://ゲーム画面
-			KeyCalc(myCharacter, MapChips); //自キャラのキー入力
-			Draw_game(myCharacter);
 			Draw_map(MapChips); //マップチップの描画
+			KeyCalc(myCharacter, enemy_01, MapChips); //自キャラのキー入力
+
+
+			if (Key[KEY_INPUT_Z] == 1 && sword_1.intervalflag == 0) {
+				sword_1.intervalflag=1;
+			}
+			if (sword_1.intervalflag == 1) {
+				sword_1.intervalcount++;
+				sword_1.Draw({ myCharacter.pos.x - 32, myCharacter.pos.y - 32 }, sword_1.handle, sword_1.drawinterval);
+				if (sword_1.intervalcount >= sword_1.drawinterval) {
+					sword_1.intervalflag = 0;
+					sword_1.intervalcount = 0;
+				}
+			}
+
+			Draw_game(myCharacter);
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
+			for (int i = 0; i < 3; i++)
+				enemy_01[i].Draw(enemy_01[i].pos, enemy_01[i].handle);
 			break;
 		default:
 			break;
@@ -173,7 +202,7 @@ Character& c : 自分のキャラクタのオブジェクト
 =====================================
 *****/
 
-void KeyCalc(Character& c, MapElement map[]) {
+void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	
 	//移動可能かどうか判定
 	/*
@@ -222,34 +251,60 @@ void KeyCalc(Character& c, MapElement map[]) {
 	//自キャラクタの移動
 	//移動可能かどうか判定
 	Pos oldp = c.pos;//移動計算前の座標保存
+	int hitenemyflag = 0;//敵との当たり判定(0:当たり判定なし, 1: 当たり判定あり)
 	if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
 		c.move_v = 0;
-	    c.pos.x += 4;
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+	    c.pos.x += 6;
+		for (int i = 0; i < 3; i++) {
+			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
+				hitenemyflag = 1;
+				break;
+			}
+		}
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
 			c.pos.x = oldp.x;
 		}
 	}
     if (Key[KEY_INPUT_DOWN] >= 1) {
 		c.move_v = 1;
-		c.pos.y += 4;
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		c.pos.y += 6;
+		for (int i = 0; i < 3; i++) {
+			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
+				hitenemyflag = 1;
+				break;
+			}
+		}
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
 		 	c.pos.y = oldp.y;
 		}
 	}
 	if (Key[KEY_INPUT_LEFT] >= 1) {
 		c.move_v = 2;
-		c.pos.x -= 4;
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		c.pos.x -= 6;
+		for (int i = 0; i < 3; i++) {
+			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
+				hitenemyflag = 1;
+				break;
+			}
+		}
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
 			c.pos.x = oldp.x;
 		}
 	}
 	 if (Key[KEY_INPUT_UP] >= 1) {
 		c.move_v = 3;
-		c.pos.y -= 4;
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		c.pos.y -= 6;
+		for (int i = 0; i < 3; i++) {
+			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
+				hitenemyflag = 1;
+				break;
+			}
+		}
+		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
 			c.pos.y = oldp.y;
 		}
 	}
+
 
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;

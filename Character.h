@@ -50,4 +50,52 @@ public:
 	void Draw(Pos p, int handle);
 };
 
+/******
+=============================
+敵用クラス
+=============================
+Characterクラスの継承
+=============================
+メンバ
+=============================
+メソッド
+=============================
+******/
+class Enemy : public Character
+{
+
+public:
+	Enemy();
+	Enemy(Pos pos_init, int handle_init, int move_f_init, int move_v_init);
+};
+
+/*****
+=============================
+技用のクラス
+=============================
+メンバ
+int handle : 技画像のデータハンドル
+int drawinterval : 表示するフレーム数
+int intervalcount : 表示したフレーム数をカウント
+=============================
+メソッド
+Character() : キャラクタの初期設定
+void Draw(Pos p,int handle) : キャラクタ画像の表示
+=============================
+*****/
+class Skill
+{
+private:
+public:
+	int handle;
+	int drawinterval;
+	int intervalflag = 0;
+	int intervalcount;
+
+	Skill(int handle_init, int drawinterval_init, int intervalcount_init);
+	void Draw(Pos p, int handle, int drawinterval);
+};
+
+
+extern int Hit_Enemy( Pos p, Pos ep);
 #endif
