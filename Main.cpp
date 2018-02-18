@@ -33,8 +33,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 画面に絵をロード
 	//キャラクタ
 	Character myCharacter(LoadGraph("images/mycharacter2.png"));
-	myCharacter.pos = { 5 * CHIP_SIZE, 11 * CHIP_SIZE };
+	myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
 	myCharacter.move_v = 0;
+	myCharacter.chargeflag = 0;
 
 	//敵
 	Enemy enemy[1] = {
@@ -54,6 +55,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		arrow_1[i].shootflag = 0;
 		arrow_1[i].distance = 0;
 		arrow_1[i].range = 0;
+		arrow_1[i].chargetime = 0;
 	}
 
 	MapElement MapChips[2] = {
@@ -66,7 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int frame_count = 0;
 
 	int enemy_hitflag = 0;//0ならヒットなし,1ならヒット
-	int charge_count = 0;
+	int charge_count = 0;//チャージした時間
 
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
@@ -87,13 +89,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case 1://ゲーム画面
 			Draw_map(MapChips); //マップチップの描画
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
+			
+			if (Key[KEY_INPUT_Z] >= 1) {
+				//ステータス画面用のウィンドウ
+				DrawBox(myCharacter.pos.x - CHIP_SIZE / 4, myCharacter.pos.y + CHIP_SIZE, myCharacter.pos.x + CHIP_SIZE * 5 / 4, myCharacter.pos.y + CHIP_SIZE * 5 / 4, GetColor(0, 0, 0), TRUE);
+				if (Key[KEY_INPUT_Z] < 50)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + Key[KEY_INPUT_Z]-3, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(Key[KEY_INPUT_Z] * 255 / 50, 255, 0), TRUE);
+				else if ( 50 <= Key[KEY_INPUT_Z] && Key[KEY_INPUT_Z] < 100)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + Key[KEY_INPUT_Z]-3, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255- Key[KEY_INPUT_Z] * 255 / 50, 0), TRUE);
+				else if (Key[KEY_INPUT_Z] >= 100)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x + CHIP_SIZE * 5 / 4 - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 0, 0), TRUE);
+				myCharacter.chargeflag = 1;
+				charge_count = Key[KEY_INPUT_Z];
+				if (Key[KEY_INPUT_Z] >= 100) charge_count = 100 ;
+			}
 
-			if (Key[KEY_INPUT_Z] == 1) {//Zキーが押されたとき技の発動フラグを立てる
+
+			if (Key[KEY_INPUT_Z] == 0  && myCharacter.chargeflag == 1) {//Zキーが押されたとき技の発動フラグを立てる
+				myCharacter.chargeflag = 0;
 				for (int i = 0; i < 100; i++)//描画に使用されていない矢を選ぶ
 				{
 					if (arrow_1[i].shootflag == 0) {
 						arrow_1[i].shootflag = 1;
 						arrow_1[i].pos = { myCharacter.pos.x + 16, myCharacter.pos.y - 64 };
+						arrow_1[i].range = charge_count;//チャージ時間を射出される矢の飛距離として保存
 						break;
 					}
 				}
@@ -120,7 +139,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					arrow_1[i].pos.y += sin(270*PI/180)*arrow_1[i].speed;
 					arrow_1[i].distance += sqrt(pow(cos(270 * PI / 180)*arrow_1[i].speed, 2.0) + pow(sin(270 * PI / 180)*arrow_1[i].speed ,2.0));
 					//矢が射程圏外に出たら消す
-					if (4*CHIP_SIZE + arrow_1[i].range < arrow_1[i].distance) {
+					if (3*CHIP_SIZE + arrow_1[i].range*4*CHIP_SIZE/100 < arrow_1[i].distance) {
 						arrow_1[i].shootflag = 0;
 						arrow_1[i].range = 0;
 						arrow_1[i].distance = 0;
@@ -311,7 +330,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	if (c.pos.x <= 0) c.pos.x = 0;
 	if ((MAP_WIDTH-1)*CHIP_SIZE <= c.pos.x) c.pos.x = (MAP_WIDTH-1)*CHIP_SIZE;
 	if (c.pos.y <= 8*CHIP_SIZE) c.pos.y = 8*CHIP_SIZE; //移動できる高さを制限
-	if (WINDOW_HEIGHT <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE;
+	if (WINDOW_HEIGHT-CHIP_SIZE/4 <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE- CHIP_SIZE / 4;
 }
 
 

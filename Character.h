@@ -31,6 +31,8 @@ typedef struct {
 メンバ
 int handle : キャラクタ画像のデータハンドル
 Pos pos : キャラクタの座標（画像の左上）
+int move_v : キャラクタを動かしている向き
+int chargeflag : キャラクタが弓をチャージしている状態か(0:チャージなし, 1:チャージしている)
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -44,6 +46,7 @@ public:
 	Pos pos;
 	int move_v;//移動している向き
 	int handle;
+	int chargeflag;
 
 	Character(int handle_init);
 	~Character();
@@ -83,6 +86,7 @@ int intervalcount : 表示したフレーム数をカウント
 int shootflag : 矢が飛んでいるかどうかのフラグ(1:飛んでいる, 0:飛んでいない)
 int distance : 矢が飛んでいる距離
 int range : 矢の飛距離
+int chargetime : どれだけチャージされた矢か（飛距離に影響）
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -102,6 +106,7 @@ public:
 	int shootflag;
 	int distance;
 	int range;
+	int chargetime;
 
 	//Skill(int handle_init, int drawinterval_init, int intervalcount_init);
 	void Draw(Pos p, int handle, int drawinterval);
