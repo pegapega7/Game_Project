@@ -89,14 +89,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
 
 			if (Key[KEY_INPUT_Z] == 1) {//Zキーが押されたとき技の発動フラグを立てる
-	/*			for (int i = 0; i < 100; i++)//描画に使用されていない矢を選ぶ
+				for (int i = 0; i < 100; i++)//描画に使用されていない矢を選ぶ
 				{
 					if (arrow_1[i].shootflag == 0) {
 						arrow_1[i].shootflag = 1;
 						arrow_1[i].pos = { myCharacter.pos.x + 16, myCharacter.pos.y - 64 };
 						break;
 					}
-				}*/
+				}
 			}
 			Draw_game(myCharacter);//ゲーム画面の描画
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
@@ -104,7 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			{
 				enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
 			}
-			/*
+			
 			for (int i = 0; i < 100; i++) {
 				if (arrow_1[i].shootflag == 1) {
 					arrow_1[i].Draw({ arrow_1[i].pos.x, arrow_1[i].pos.y }, arrow_1[i].handle, arrow_1[i].drawinterval); //矢の描画
@@ -134,7 +134,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
-			*/
 			break;
 		default:
 			break;
@@ -336,7 +335,7 @@ void Draw_game(Character& c)
 	ostringstream position;
 	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
 	ostringstream key;
-	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_SPACE];
+	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
 	//debug[0].name = position.str();
 	SetFontSize(20); // 描画する文字列のサイズを設定
 	SetFontThickness(3); // 描画する文字列の太さを設定
