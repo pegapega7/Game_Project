@@ -5,14 +5,14 @@
 キャラクタ座標の初期化 : Character()
 ====================
 *****/
-Character::Character(Pos pos_init, int handle_init, int move_f_init, int move_v_init)
+Character::Character(int handle_init)
 {
-	
-	pos = pos_init;
 	handle = handle_init;
-	move_f = move_f_init;
-	move_v = move_v_init;
-	
+}
+
+Character::~Character()
+{// デストラクタ
+		
 }
 
 /*****
@@ -39,28 +39,32 @@ void Character::Draw(Pos p, int handle)
 敵の初期化
 ====================
 *****/
-Enemy::Enemy(Pos pos_init, int handle_init, int move_f_init, int move_v_init) : Character(pos_init, handle_init, move_f_init, move_v_init)
+Enemy::Enemy(int handle_init) : Character(handle_init)
 {
-	pos = pos_init;
 	handle = handle_init;
-	move_f = move_f_init;
-	move_v = move_v_init;
+}
+
+Enemy::~Enemy()
+{
+	handle = -1;
+	pos = { 2000 , 2000};
 }
 /*****
 ==============================
 技クラスの初期化(引数:画像のデータハンドル, 描画間隔)
 ==============================
 *****/
+/*
 Skill::Skill(int handle_init, int drawinterval_init, int intervalcount_init)
 {
 	handle = handle_init;
 	drawinterval = drawinterval_init;
 	intervalcount = intervalcount_init;
 }
-
+*/
 /*****
 ==========================
-技の描画 : Draw(Pos p, int handle, int drawinterval, int direction)
+技の描画 : Skill::Draw(Pos p, int handle, int drawinterval, int direction)
 ==========================
 引数
 Pos p : 表示する場所の左上座標
@@ -80,9 +84,32 @@ void Skill::Draw(Pos p,int handle, int drawinterval)
 }
 
 
+
 /*****
 ==========================
-技の描画 : Draw(Pos p, int handle, int drawinterval, int direction)
+技の当たり判定: Skill::Hit(Pos p, Pos ep)
+==========================
+引数
+Pos p : 敵キャラクタの座標
+Pos sp: 技の座標
+
+=====================================
+戻り値
+1 : ヒット
+0 : ヒットなし
+==================================
+*****/
+int Skill::Hit(Pos ep,Pos sp)
+{
+	//敵との当たり判定
+	if (ep.x < sp.x + CHIP_SIZE && ep.y < sp.y + CHIP_SIZE  && (ep.x + CHIP_SIZE) > sp.x && (ep.y + CHIP_SIZE) > sp.y)
+		return 1;
+	return 0;
+}
+
+/*****
+==========================
+敵との当たり判定: Hit_Enemy(Pos p, Pos ep)
 ==========================
 引数
 Pos p : 表示する場所の左上座標
@@ -95,7 +122,7 @@ Pos ep: 敵の座標
 int Hit_Enemy(Pos p, Pos ep)
 {
 	//敵との当たり判定
-	if (p.x < ep.x + CHIP_SIZE-10 && p.y < ep.y + CHIP_SIZE-10 && (p.x + CHIP_SIZE) > ep.x+10 && (p.y + CHIP_SIZE) > ep.y+10)
+	if (p.x < ep.x+CHIP_SIZE/4 && p.y < ep.y + CHIP_SIZE && (p.x + CHIP_SIZE/2) > ep.x && (p.y + CHIP_SIZE) > ep.y)
 		return 1;
 	return 0;
 }

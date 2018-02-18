@@ -42,11 +42,11 @@ class Character
 private:
 public:
 	Pos pos;
-	int move_f;//1で移動状態,0で未移動状態
 	int move_v;//移動している向き
 	int handle;
 
-	Character(Pos pos_init, int handle_init, int move_f_init, int move_v_init);
+	Character(int handle_init);
+	~Character();
 	void Draw(Pos p, int handle);
 };
 
@@ -65,8 +65,9 @@ class Enemy : public Character
 {
 
 public:
-	Enemy();
-	Enemy(Pos pos_init, int handle_init, int move_f_init, int move_v_init);
+
+	Enemy(int handle_init);
+	~Enemy();
 };
 
 /*****
@@ -74,9 +75,14 @@ public:
 技用のクラス
 =============================
 メンバ
+int speed : 矢を動かすスピード（座標の変化率）
+int pos : : 矢を表示する座標
 int handle : 技画像のデータハンドル
 int drawinterval : 表示するフレーム数
 int intervalcount : 表示したフレーム数をカウント
+int shootflag : 矢が飛んでいるかどうかのフラグ(1:飛んでいる, 0:飛んでいない)
+int distance : 矢が飛んでいる距離
+int range : 矢の飛距離
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -87,13 +93,19 @@ class Skill
 {
 private:
 public:
+	int speed = 16;
+	Pos pos;
 	int handle;
 	int drawinterval;
 	int intervalflag = 0;
 	int intervalcount;
+	int shootflag;
+	int distance;
+	int range;
 
-	Skill(int handle_init, int drawinterval_init, int intervalcount_init);
+	//Skill(int handle_init, int drawinterval_init, int intervalcount_init);
 	void Draw(Pos p, int handle, int drawinterval);
+	int Hit(Pos p, Pos sp);
 };
 
 

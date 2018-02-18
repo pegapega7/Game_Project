@@ -32,16 +32,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// 画面に絵をロード
 	//キャラクタ
-	Character myCharacter({ 5 * CHIP_SIZE, 11*CHIP_SIZE}, LoadGraph("images/mycharacter2.png"), 1, 0);
+	Character myCharacter(LoadGraph("images/mycharacter2.png"));
+	myCharacter.pos = { 5 * CHIP_SIZE, 11 * CHIP_SIZE };
+	myCharacter.move_v = 0;
 
 	//敵
-	Enemy enemy_01[3] = {
-		{{ 2 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
-		{{ 5 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
-		{{ 8 * CHIP_SIZE, 3 * CHIP_SIZE }, LoadGraph("images/enemy1.png"), 1, 0 },
+	Enemy enemy[1] = {
+		{LoadGraph("images/enemy1.png")},
 	};
+	for (int i = 0; i < 1; i++) {
+		enemy[i].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
+	}
+
 	//技
-	Skill sword_1({ LoadGraph("images/sword_effect1.png") , 10, 0});
+	Skill arrow_1[100];
+	int arrow_handle = LoadGraph("images/normal_arrow.png");
+	for (int i=0; i < 100; i++) {
+		arrow_1[i].handle = arrow_handle;
+		arrow_1[i].drawinterval = 10;
+		arrow_1[i].intervalcount = 0;
+		arrow_1[i].shootflag = 0;
+		arrow_1[i].distance = 0;
+		arrow_1[i].range = 0;
+	}
 
 	MapElement MapChips[2] = {
 		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
@@ -51,6 +64,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//ゲームモード選択フラグ
 	int WinFlag = 0;
 	int frame_count = 0;
+
+	int enemy_hitflag = 0;//0ならヒットなし,1ならヒット
+	int charge_count = 0;
 
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
@@ -70,25 +86,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			break;
 		case 1://ゲーム画面
 			Draw_map(MapChips); //マップチップの描画
-			KeyCalc(myCharacter, enemy_01, MapChips); //自キャラのキー入力
+			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
 
-
-			if (Key[KEY_INPUT_Z] == 1 && sword_1.intervalflag == 0) {
-				sword_1.intervalflag=1;
+			if (Key[KEY_INPUT_Z] == 1) {//Zキーが押されたとき技の発動フラグを立てる
+	/*			for (int i = 0; i < 100; i++)//描画に使用されていない矢を選ぶ
+				{
+					if (arrow_1[i].shootflag == 0) {
+						arrow_1[i].shootflag = 1;
+						arrow_1[i].pos = { myCharacter.pos.x + 16, myCharacter.pos.y - 64 };
+						break;
+					}
+				}*/
 			}
-			if (sword_1.intervalflag == 1) {
-				sword_1.intervalcount++;
-				sword_1.Draw({ myCharacter.pos.x - 32, myCharacter.pos.y - 32 }, sword_1.handle, sword_1.drawinterval);
-				if (sword_1.intervalcount >= sword_1.drawinterval) {
-					sword_1.intervalflag = 0;
-					sword_1.intervalcount = 0;
+			Draw_game(myCharacter);//ゲーム画面の描画
+			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
+			for (int i = 0; i < 1; i++)
+			{
+				enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
+			}
+			/*
+			for (int i = 0; i < 100; i++) {
+				if (arrow_1[i].shootflag == 1) {
+					arrow_1[i].Draw({ arrow_1[i].pos.x, arrow_1[i].pos.y }, arrow_1[i].handle, arrow_1[i].drawinterval); //矢の描画
+					for (int j = 0; j < 1; j++) {
+						if (arrow_1[i].Hit(enemy[j].pos,  arrow_1[i].pos) == 1) {//技の発動フラグが立っているとき描画と当たり判定
+							enemy[j].~Enemy();
+							arrow_1[i].shootflag = 0;
+							arrow_1[i].range = 0;
+							arrow_1[i].distance = 0;
+						}
+					}
+					arrow_1[i].pos.x += cos(270*PI/180)*arrow_1[i].speed;
+					arrow_1[i].pos.y += sin(270*PI/180)*arrow_1[i].speed;
+					arrow_1[i].distance += sqrt(pow(cos(270 * PI / 180)*arrow_1[i].speed, 2.0) + pow(sin(270 * PI / 180)*arrow_1[i].speed ,2.0));
+					//矢が射程圏外に出たら消す
+					if (4*CHIP_SIZE + arrow_1[i].range < arrow_1[i].distance) {
+						arrow_1[i].shootflag = 0;
+						arrow_1[i].range = 0;
+						arrow_1[i].distance = 0;
+
+					}
+					//矢がゲーム画面外から出たら消す
+					if (arrow_1[i].pos.x <= -30 || MAP_WIDTH * CHIP_SIZE <= arrow_1[i].pos.x || arrow_1[i].pos.y <= -CHIP_SIZE) {
+						arrow_1[i].shootflag = 0;
+						arrow_1[i].range = 0;
+						arrow_1[i].distance = 0;
+					}
 				}
 			}
-
-			Draw_game(myCharacter);
-			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
-			for (int i = 0; i < 3; i++)
-				enemy_01[i].Draw(enemy_01[i].pos, enemy_01[i].handle);
+			*/
 			break;
 		default:
 			break;
@@ -203,51 +249,7 @@ Character& c : 自分のキャラクタのオブジェクト
 *****/
 
 void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
-	
-	//移動可能かどうか判定
-	/*
-		c.move_f = 1;
-		if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
-			c.move_v = 0;
-		}
-		else if (Key[KEY_INPUT_DOWN] >= 1) {
-			c.move_v = 1;
-		}
-		else if (Key[KEY_INPUT_LEFT] >= 1) {
-			c.move_v = 2;
-		}
-		else if (Key[KEY_INPUT_UP] >= 1) {
-			c.move_v = 3;
-		}
-		else c.move_f = 0;
 
-
-	if (c.move_f == 1) {
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-		//if(hitmap_f == 1) c.pos = old
-			c.move_f = 0;
-		}
-	}
-
-
-	//自キャラクタの移動
-	if (c.move_f == 1) {
-		if (Key[KEY_INPUT_RIGHT] >= 1) {
-			c.pos.x += 4;
-		}
-		if (Key[KEY_INPUT_DOWN] >= 1) {
-			c.pos.y += 4;
-		}
-		if (Key[KEY_INPUT_LEFT] >= 1) {
-			c.pos.x -= 4;
-		}
-		if (Key[KEY_INPUT_UP] >= 1) {
-			c.pos.y -= 4;
-		}
-	}
-	*/
-
-	
 	//自キャラクタの移動
 	//移動可能かどうか判定
 	Pos oldp = c.pos;//移動計算前の座標保存
@@ -309,7 +311,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
 	if ((MAP_WIDTH-1)*CHIP_SIZE <= c.pos.x) c.pos.x = (MAP_WIDTH-1)*CHIP_SIZE;
-	if (c.pos.y <= 0) c.pos.y = 0;
+	if (c.pos.y <= 8*CHIP_SIZE) c.pos.y = 8*CHIP_SIZE; //移動できる高さを制限
 	if (WINDOW_HEIGHT <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE;
 }
 
@@ -333,8 +335,11 @@ void Draw_game(Character& c)
 	//でばっぐ用に座標を出力
 	ostringstream position;
 	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
+	ostringstream key;
+	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_SPACE];
 	//debug[0].name = position.str();
 	SetFontSize(20); // 描画する文字列のサイズを設定
 	SetFontThickness(3); // 描画する文字列の太さを設定
 	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
+	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
 }

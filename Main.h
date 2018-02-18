@@ -5,6 +5,7 @@
 #include "DxLib.h"
 #include "windows.h"
 #include "sstream"
+#include "vector"
 
 using namespace std;
 
@@ -14,6 +15,9 @@ using namespace std;
 #define MAP_WIDTH 10
 #define MAP_HEIGHT 12
 #define CHIP_SIZE 64
+#define PI 3.1415926f
+
+#define MAXCHARGE 512
 
 /*****
 ===========================
@@ -35,8 +39,9 @@ MenuElement MainMenu[2] = {
 	{ 500, 550, "ゲーム終了", 0 },
 };
 
-MenuElement debug[1] = {
-	{ 768, 550, "キャラ座標(", 0 },
+MenuElement debug[2] = {
+	{ 640, 550, "キャラ座標(", 0 },
+	{ 640, 600, "入力キー : ", 0 },
 };
 
 #endif
