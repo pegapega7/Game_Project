@@ -25,6 +25,7 @@ typedef struct {
 } MapElement;
 
 
+extern void Init_map();
 extern void Draw_map(MapElement map[]);
 extern int Hit_map(MapElement map[], int hitflag, Pos p, Pos oldp);
 #endif

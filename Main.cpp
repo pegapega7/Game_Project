@@ -7,6 +7,8 @@ int KeyCalc_menu(int SelectNum);
 void Draw_menu();
 void KeyCalc(Character& c, Enemy e[],MapElement map[]);
 void Draw_game(Character& c);
+int KeyCalc_ending(int SelectNum);
+void Draw_ending();
 
 using namespace std;
 
@@ -36,14 +38,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
 	myCharacter.move_v = 0;
 	myCharacter.chargeflag = 0;
-
+	
 	//敵
 	Enemy enemy[1] = {
 		{LoadGraph("images/enemy1.png")},
 	};
-	for (int i = 0; i < 1; i++) {
-		enemy[i].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
-	}
+	enemy[0].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
+	enemy[0].aliveflag = 1;
+	enemy[0].bossflag = 0;
+
+	//ボス
+	Enemy boss[1] = {
+		{LoadGraph("images/enemy1.png")},
+	};
+	boss[0].pos = { 6 * CHIP_SIZE, 6 * CHIP_SIZE };
+	boss[0].aliveflag = 1;
+	boss[0].bossflag = 1;
 
 	//技
 	Skill arrow_1[100];
@@ -63,13 +73,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{ LoadGraph("images/tree.png"), 1 }, //マップ番号２：木
 	};
 
-	//ゲームモード選択フラグ
-	int WinFlag = 0;
-	int frame_count = 0;
-
 	int enemy_hitflag = 0;//0ならヒットなし,1ならヒット
 	int charge_count = 0;//チャージした時間
 
+
+	//ゲームモード選択フラグ
+	int WinFlag = 0;
+	int frame_count = 0;
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
@@ -85,6 +95,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case 0://メニュー画面
 			WinFlag = KeyCalc_menu(SelectNum);//メニュー選択
 			Draw_menu();//メニュー描画
+
+			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
+				myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
+				myCharacter.move_v = 0;
+				myCharacter.chargeflag = 0;
+				//敵
+				enemy[0].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
+				enemy[0].aliveflag = 1;
+				enemy[0].bossflag = 0;
+
+				////ボス
+				boss[0].pos = { 6 * CHIP_SIZE, 6 * CHIP_SIZE };
+				boss[0].aliveflag = 1;
+				boss[0].bossflag = 1;
+
+				for (int i = 0; i < 100; i++) {
+					arrow_1[i].handle = arrow_handle;
+					arrow_1[i].drawinterval = 10;
+					arrow_1[i].intervalcount = 0;
+					arrow_1[i].shootflag = 0;
+					arrow_1[i].distance = 0;
+					arrow_1[i].range = 0;
+					arrow_1[i].chargetime = 0;
+				}
+				Init_map();
+			}
+
 			break;
 		case 1://ゲーム画面
 			Draw_map(MapChips); //マップチップの描画
@@ -121,29 +158,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
 			for (int i = 0; i < 1; i++)
 			{
+				if(enemy[i].aliveflag == 1)//敵が生きていれば描画
 				enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
 			}
-			
-			for (int i = 0; i < 100; i++) {
+			if (boss[0].aliveflag == 1)
+				boss[0].Draw(boss[0].pos, boss[0].handle);
+
+			for (int i = 0; i < 100; i++) {//矢の描画、敵と矢のあたり判定
 				if (arrow_1[i].shootflag == 1) {
 					arrow_1[i].Draw({ arrow_1[i].pos.x, arrow_1[i].pos.y }, arrow_1[i].handle, arrow_1[i].drawinterval); //矢の描画
 					for (int j = 0; j < 1; j++) {
-						if (arrow_1[i].Hit(enemy[j].pos,  arrow_1[i].pos) == 1) {//技の発動フラグが立っているとき描画と当たり判定
-							enemy[j].~Enemy();
+						if (enemy[j].aliveflag == 1) {//敵が生きていればあたり判定
+							if (arrow_1[i].Hit(enemy[j].pos, arrow_1[i].pos) == 1) {//技の発動フラグが立っているとき描画と当たり判定
+								//enemy[j].~Enemy();
+								//enemy[j].pos = { 1200, 1200 };
+								enemy[j].aliveflag = 0;
+								arrow_1[i].shootflag = 0;
+								arrow_1[i].range = 0;
+								arrow_1[i].distance = 0;
+							}
+						}
+					}
+					if (boss[0].aliveflag == 1) {//ボスが生きていればあたり判定
+						if (arrow_1[i].Hit(boss[0].pos, arrow_1[i].pos) == 1) {//技の発動フラグが立っているとき描画と当たり判定
+							//boss[0].~Enemy();
+							//boss[0].pos = { 1200, 1200 };
+							boss[0].aliveflag = 0;
 							arrow_1[i].shootflag = 0;
 							arrow_1[i].range = 0;
 							arrow_1[i].distance = 0;
+							if (boss[0].bossflag == 1) { WinFlag = 3; SelectNum = 0; }
 						}
 					}
 					arrow_1[i].pos.x += cos(270*PI/180)*arrow_1[i].speed;
 					arrow_1[i].pos.y += sin(270*PI/180)*arrow_1[i].speed;
 					arrow_1[i].distance += sqrt(pow(cos(270 * PI / 180)*arrow_1[i].speed, 2.0) + pow(sin(270 * PI / 180)*arrow_1[i].speed ,2.0));
 					//矢が射程圏外に出たら消す
-					if (3*CHIP_SIZE + arrow_1[i].range*4*CHIP_SIZE/100 < arrow_1[i].distance) {
+					if (3*CHIP_SIZE + arrow_1[i].range*5*CHIP_SIZE/100 < arrow_1[i].distance) {
 						arrow_1[i].shootflag = 0;
 						arrow_1[i].range = 0;
 						arrow_1[i].distance = 0;
-
 					}
 					//矢がゲーム画面外から出たら消す
 					if (arrow_1[i].pos.x <= -30 || MAP_WIDTH * CHIP_SIZE <= arrow_1[i].pos.x || arrow_1[i].pos.y <= -CHIP_SIZE) {
@@ -153,6 +207,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
+			break;
+		case 3:
+			WinFlag = KeyCalc_ending(SelectNum);//メニュー選択
+			Draw_ending();
 			break;
 		default:
 			break;
@@ -360,4 +418,68 @@ void Draw_game(Character& c)
 	SetFontThickness(3); // 描画する文字列の太さを設定
 	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
 	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
+}
+
+/*****
+=====================================
+エンディング画面のキー入力 : int KeyCalc_ending(int SelectNum)
+=====================================
+引数
+int SelectNum : 現在選択中のメニュー
+=====================================
+戻り値
+0 : ゲームスタートが選択されたとき
+-1 : ゲーム終了が選択されたとき
+=====================================
+*****/
+int KeyCalc_ending(int SelectNum)
+{
+	if (Key[KEY_INPUT_DOWN] == 1) { // 上キーが押された瞬間だけ処理
+
+		SelectNum = (SelectNum + 1) % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+	}
+	if (Key[KEY_INPUT_UP] == 1) { // 上キーが押された瞬間だけ処理
+
+		SelectNum = SelectNum % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+	}
+	if (Key[KEY_INPUT_DOWN] == 1 || Key[KEY_INPUT_UP] == 1) { // 下キーが押された瞬間だけ処理
+		for (int i = 0; i < 2; i++) {              // メニュー項目数である2個ループ処理
+			if (i == SelectNum) {          // 今処理しているのが、選択番号と同じ要素なら
+				Ending[i].flag = 1;      //選択されているものを1にする
+			}
+			else {                       // 今処理しているのが、選択番号以外なら
+				Ending[i].flag = 0;// 選択されているものを0にする
+			}
+		}
+	}
+
+	if (Key[KEY_INPUT_RETURN] == 1 || Key[KEY_INPUT_SPACE] == 1) { //スペースキーまたはエンターキーが押されたとき
+		if (Ending[0].flag == 1) return 0; //"タイトルに戻る"が選択されている
+		if (Ending[1].flag == 1) return -1; //"ゲーム終了"が選択されている
+	}
+
+	return 3;
+}
+
+
+
+/*****
+=====================================
+ゲームエンディング画面 : void Draw_ending()
+=====================================
+引数
+なし
+=====================================
+戻り値
+なし
+=====================================
+*****/
+void Draw_ending()
+{
+	SetFontSize(64); // 描画する文字列のサイズを設定
+	SetFontThickness(3); // 描画する文字列の太さを設定
+	for (int i = 0; i < 2; i++) { // メニュー項目を描画
+		if (Ending[i].flag == 0) DrawFormatString(Ending[i].x, Ending[i].y, GetColor(0, 0, 0), Ending[i].name.c_str());
+		else if (Ending[i].flag == 1) DrawFormatString(Ending[i].x, Ending[i].y, GetColor(255, 0, 0), Ending[i].name.c_str());
+	}
 }

@@ -60,15 +60,17 @@ public:
 Characterクラスの継承
 =============================
 メンバ
+int bossflag : ボスかどうかのフラグ(0:ボス以外, 1: ボス)
+int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 =============================
 メソッド
 =============================
 ******/
 class Enemy : public Character
 {
-
 public:
-
+	int bossflag;
+	int aliveflag;
 	Enemy(int handle_init);
 	~Enemy();
 };
