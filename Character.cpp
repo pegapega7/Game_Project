@@ -90,7 +90,7 @@ void Skill::Draw(Pos p,int handle, int drawinterval)
 技の当たり判定: Skill::Hit(Pos p, Pos ep)
 ==========================
 引数
-Pos p : 敵キャラクタの座標
+Pos ep : 敵キャラクタの座標
 Pos sp: 技の座標
 
 =====================================
@@ -102,7 +102,7 @@ Pos sp: 技の座標
 int Skill::Hit(Pos ep,Pos sp)
 {
 	//敵との当たり判定
-	if (ep.x < sp.x + CHIP_SIZE && ep.y < sp.y + CHIP_SIZE  && (ep.x + CHIP_SIZE) > sp.x && (ep.y + CHIP_SIZE) > sp.y)
+	if (ep.x+24 < sp.x + CHIP_SIZE/2 && ep.y < sp.y + CHIP_SIZE && (ep.x + 40) > sp.x && (ep.y + CHIP_SIZE) > sp.y)
 		return 1;
 	return 0;
 }
@@ -125,4 +125,26 @@ int Hit_Enemy(Pos p, Pos ep)
 	if (p.x < ep.x+CHIP_SIZE/4 && p.y < ep.y + CHIP_SIZE && (p.x + CHIP_SIZE/2) > ep.x && (p.y + CHIP_SIZE) > ep.y)
 		return 1;
 	return 0;
+}
+
+/*****
+=====================================
+敵の種類ごとに移動先を決定 : void Move_enemy(Enemy e)
+=====================================
+引数
+Enemy e : 敵のクラス
+=====================================
+戻り値
+なし
+=====================================
+*****/
+void Move_enemy(Enemy& e)
+{
+	switch (e.enemytype) {
+	case 0:
+		e.pos.y = e.pos.y + e.speed;
+		break;
+	default : 
+		break;
+	}
 }

@@ -38,12 +38,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
 	myCharacter.move_v = 0;
 	myCharacter.chargeflag = 0;
+	myCharacter.aliveflag = 1;
 	
 	//敵
 	Enemy enemy[1] = {
 		{LoadGraph("images/enemy1.png")},
 	};
 	enemy[0].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
+	enemy[0].enemytype = 0;
+	enemy[0].speed = 6;
 	enemy[0].aliveflag = 1;
 	enemy[0].bossflag = 0;
 
@@ -100,10 +103,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
 				myCharacter.move_v = 0;
 				myCharacter.chargeflag = 0;
+				myCharacter.aliveflag = 1;
 				//敵
 				enemy[0].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
 				enemy[0].aliveflag = 1;
 				enemy[0].bossflag = 0;
+				enemy[0].enemytype = 0;
+				enemy[0].speed = 6;
 
 				////ボス
 				boss[0].pos = { 6 * CHIP_SIZE, 6 * CHIP_SIZE };
@@ -154,6 +160,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
+
+			Move_enemy(enemy[0]);//敵の移動先を決める
+
 			Draw_game(myCharacter);//ゲーム画面の描画
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
 			for (int i = 0; i < 1; i++)
@@ -187,7 +196,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							arrow_1[i].shootflag = 0;
 							arrow_1[i].range = 0;
 							arrow_1[i].distance = 0;
-							if (boss[0].bossflag == 1) { WinFlag = 3; SelectNum = 0; }
+							if (boss[0].bossflag == 1) { WinFlag = 2; SelectNum = 0; }
 						}
 					}
 					arrow_1[i].pos.x += cos(270*PI/180)*arrow_1[i].speed;
@@ -207,8 +216,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
+
+			if (myCharacter.aliveflag == 0) WinFlag = 2;
 			break;
-		case 3:
+		case 2:
 			WinFlag = KeyCalc_ending(SelectNum);//メニュー選択
 			Draw_ending();
 			break;
@@ -333,56 +344,30 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
 		c.move_v = 0;
 	    c.pos.x += 6;
-		for (int i = 0; i < 3; i++) {
-			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
-				hitenemyflag = 1;
-				break;
-			}
-		}
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-			c.pos.x = oldp.x;
-		}
 	}
     if (Key[KEY_INPUT_DOWN] >= 1) {
 		c.move_v = 1;
 		c.pos.y += 6;
-		for (int i = 0; i < 3; i++) {
-			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
-				hitenemyflag = 1;
-				break;
-			}
-		}
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-		 	c.pos.y = oldp.y;
-		}
 	}
 	if (Key[KEY_INPUT_LEFT] >= 1) {
 		c.move_v = 2;
 		c.pos.x -= 6;
-		for (int i = 0; i < 3; i++) {
-			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
-				hitenemyflag = 1;
-				break;
-			}
-		}
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-			c.pos.x = oldp.x;
-		}
 	}
-	 if (Key[KEY_INPUT_UP] >= 1) {
+	if (Key[KEY_INPUT_UP] >= 1) {
 		c.move_v = 3;
 		c.pos.y -= 6;
-		for (int i = 0; i < 3; i++) {
-			if (Hit_Enemy(c.pos, e[i].pos) == 1) {
-				hitenemyflag = 1;
-				break;
-			}
-		}
-		if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-			c.pos.y = oldp.y;
-		}
 	}
 
+	 for (int i = 0; i < 1; i++) {
+		 if (Hit_Enemy(c.pos, e[i].pos) == 1 && e[i].aliveflag == 1) {
+			 hitenemyflag = 1;
+			 break;
+		 }
+	 }
+	 if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
+		 c.pos = oldp;
+		 c.aliveflag = 0;//ゲームオーバー
+	 }
 
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
@@ -390,6 +375,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	if (c.pos.y <= 8*CHIP_SIZE) c.pos.y = 8*CHIP_SIZE; //移動できる高さを制限
 	if (WINDOW_HEIGHT-CHIP_SIZE/4 <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE- CHIP_SIZE / 4;
 }
+
 
 
 /*****
@@ -458,7 +444,7 @@ int KeyCalc_ending(int SelectNum)
 		if (Ending[1].flag == 1) return -1; //"ゲーム終了"が選択されている
 	}
 
-	return 3;
+	return 2;
 }
 
 

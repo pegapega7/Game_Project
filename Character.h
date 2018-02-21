@@ -47,6 +47,7 @@ public:
 	int move_v;//移動している向き
 	int handle;
 	int chargeflag;
+	int aliveflag;
 
 	Character(int handle_init);
 	~Character();
@@ -60,8 +61,10 @@ public:
 Characterクラスの継承
 =============================
 メンバ
+int enemytype : 敵の種類
 int bossflag : ボスかどうかのフラグ(0:ボス以外, 1: ボス)
 int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
+int speed : 敵の動くスピード
 =============================
 メソッド
 =============================
@@ -69,8 +72,9 @@ int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 class Enemy : public Character
 {
 public:
+	int enemytype;
 	int bossflag;
-	int aliveflag;
+	int speed;
 	Enemy(int handle_init);
 	~Enemy();
 };
@@ -117,4 +121,5 @@ public:
 
 
 extern int Hit_Enemy( Pos p, Pos ep);
+extern void Move_enemy(Enemy& e);
 #endif
