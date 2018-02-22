@@ -69,14 +69,18 @@ int speed : 敵の動くスピード
 メソッド
 =============================
 ******/
-class Enemy : public Character
+class Enemy
 {
 public:
+	Pos pos;
+	int handle;
+	int aliveflag;
 	int enemytype;
 	int bossflag;
 	int speed;
-	Enemy(int handle_init);
+	Enemy(int enemytype_init);
 	~Enemy();
+	void Draw(Pos p, int handle);
 };
 
 /*****

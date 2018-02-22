@@ -18,6 +18,8 @@ using namespace std;
 #define PI 3.1415926f
 
 #define MAXCHARGE 512
+#define ENEMY_TYPE_NUM 3
+#define ENEMY_NUM 10
 
 /*****
 ===========================
@@ -47,6 +49,11 @@ MenuElement debug[2] = {
 MenuElement Ending[2] = {
 	{ 500, 500, "タイトルに戻る", 1 }, 
 	{ 500, 550, "ゲーム終了", 0 },
+};
+
+MenuElement Gameover[2] = {
+	{ 500, 500, "リトライ", 1 },
+	{ 500, 550, "タイトルに戻る", 0 },
 };
 
 #endif

@@ -39,16 +39,34 @@ void Character::Draw(Pos p, int handle)
 敵の初期化
 ====================
 *****/
-Enemy::Enemy(int handle_init) : Character(handle_init)
+Enemy::Enemy(int enemytype_init)
 {
-	handle = handle_init;
+	enemytype = enemytype_init;
 }
 
 Enemy::~Enemy()
 {
 	handle = -1;
-	pos = { 2000 , 2000};
 }
+
+/*****
+====================
+キャラクタ画像を表示 : Draw(Pos p, int handle)
+====================
+引数
+Pos p : キャラクタの座標
+int handle : データハンドル
+====================
+戻り値
+なし
+====================
+
+*****/
+void Enemy::Draw(Pos p, int handle)
+{
+	DrawGraph(p.x, p.y, handle, TRUE); //画像の描画
+}
+
 /*****
 ==============================
 技クラスの初期化(引数:画像のデータハンドル, 描画間隔)
