@@ -6,7 +6,7 @@ int gpUpdateKey();
 int KeyCalc_menu(int SelectNum);
 void Draw_menu();
 void KeyCalc(Character& c, Enemy e[],MapElement map[]);
-void Draw_game(Character& c);
+void Draw_game(Character& c, int gameovercount);
 int KeyCalc_ending(int SelectNum);
 void Draw_ending();
 int KeyCalc_gameover(int SelectNum);
@@ -15,7 +15,7 @@ void Draw_gameover();
 using namespace std;
 
 int Key[256];// キーが押されているフレーム数を格納する
-
+int time;//時間を記録
 
 /*****
 メイン関数
@@ -63,6 +63,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int WinFlag = 0;
 	int frame_count = 0;
 	int clear_flag = 0;//クリアしたら1
+	int gameover_count = 0;
+
+	int start_time = 0;
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
@@ -102,13 +105,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					default:
 						break;
 					}
-					enemy[i].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
 					enemy[i].aliveflag = 0;
+					enemy[i].enemy_clearflag = 0;
 					enemy[i].bossflag = 0;
 				}
 
 				boss[0].handle = LoadGraph("images/boss1.png");
-				boss[0].pos = { 6 * CHIP_SIZE, 6 * CHIP_SIZE };
 				boss[0].aliveflag = 1;
 				boss[0].bossflag = 1;
 
@@ -124,14 +126,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 				Init_map();
 				clear_flag = 0;
+				gameover_count = 0;
+				SRand(GetNowCount());//乱数の初期化
+				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
 			}
 
 			break;
 		case 1://ゲーム画面
-
+			time = GetNowCount() - start_time;
 			/*********************計算部***********************/
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
-			Move_enemy(enemy[0]);//敵の移動先を決める
+
+			if((time/1000)%10 == 0){//3秒ごと
+				int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
+				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+					if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
+						enemy[i].aliveflag = 1;
+						int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+						enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
+						break;
+					}
+				}
+			}
+
+			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵のタイプごとに描画
+				if(enemy[i].aliveflag == 1)
+				Move_enemy(enemy[i]);//敵の移動先を決める
+			}
 			
 			//矢のチャージ
 			if (Key[KEY_INPUT_Z] >= 1) {
@@ -158,7 +179,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					arrow_1[i].pos.x += cos(270 * PI / 180)*arrow_1[i].speed;
 					arrow_1[i].pos.y += sin(270 * PI / 180)*arrow_1[i].speed;
 					for (int j = 0; j < ENEMY_TYPE_NUM*ENEMY_NUM; j++) {
-
 						if (enemy[j].aliveflag == 1) {//敵が生きていればあたり判定
 							if (arrow_1[i].Hit(enemy[j].pos, arrow_1[i].pos) == 1) {
 								enemy[j].aliveflag = 0;
@@ -179,9 +199,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
+			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+				if (enemy[i].enemy_clearflag == 1 && enemy[i].aliveflag == 1) {
+					gameover_count++;
+					enemy[i].aliveflag = 0;
+				}
+			}
+
 
 			/************************描画部**************************/
-			Draw_game(myCharacter);//ゲーム画面の描画
+			Draw_game(myCharacter, gameover_count);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
@@ -258,13 +285,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					default:
 						break;
 					}
-					enemy[i].pos = { 5 * CHIP_SIZE, 3 * CHIP_SIZE };
 					enemy[i].aliveflag = 0;
 					enemy[i].bossflag = 0;
 				}
 
 				boss[0].handle = LoadGraph("images/boss1.png");
-				boss[0].pos = { 6 * CHIP_SIZE, 6 * CHIP_SIZE };
 				boss[0].aliveflag = 1;
 				boss[0].bossflag = 1;
 
@@ -281,6 +306,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Init_map();
 			}
 			clear_flag = 0;//クリアしたら1
+			start_time = GetNowCount();
 			break;
 		default:
 			break;
@@ -417,7 +443,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 		c.pos.y -= 6;
 	}
 
-	 for (int i = 0; i < 1; i++) {
+	 for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 		 if (Hit_Enemy(c.pos, e[i].pos) == 1 && e[i].aliveflag == 1) {
 			 hitenemyflag = 1;
 			 break;
@@ -448,7 +474,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 なし
 =====================================
 *****/
-void Draw_game(Character& c)
+void Draw_game(Character& c, int gameover_count)
 {
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
@@ -459,10 +485,16 @@ void Draw_game(Character& c)
 	ostringstream key;
 	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
 	//debug[0].name = position.str();
+	ostringstream timer;
+	timer << debug[2].name.c_str() << time / 1000 << " s";
+	ostringstream gameovercounter;
+	gameovercounter << debug[3].name.c_str() << gameover_count;
 	SetFontSize(20); // 描画する文字列のサイズを設定
 	SetFontThickness(3); // 描画する文字列の太さを設定
 	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
 	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
+	DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
+	DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
 }
 
 /*****

@@ -158,11 +158,19 @@ Enemy e : “G‚ÌƒNƒ‰ƒX
 *****/
 void Move_enemy(Enemy& e)
 {
+	Pos oldp = e.pos;
 	switch (e.enemytype) {
 	case 0:
+		e.pos.y = e.pos.y + e.speed;
+		break;
+	case 1: break;
+
+	case 2:
 		e.pos.y = e.pos.y + e.speed;
 		break;
 	default : 
 		break;
 	}
+
+	if (e.pos.y > (MAP_HEIGHT - 1)*CHIP_SIZE) e.enemy_clearflag = 1;
 }

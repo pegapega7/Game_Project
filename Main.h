@@ -41,9 +41,11 @@ MenuElement MainMenu[2] = {
 	{ 500, 550, "ゲーム終了", 0 },
 };
 
-MenuElement debug[2] = {
+MenuElement debug[4] = {
 	{ 640, 550, "キャラ座標(", 0 },
 	{ 640, 600, "入力キー : ", 0 },
+	{ 640, 650, "時間 : ",0},
+	{ 640, 500, "侵入されたカウント ", 0 },
 };
 
 MenuElement Ending[2] = {

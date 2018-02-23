@@ -61,9 +61,10 @@ public:
 Characterクラスの継承
 =============================
 メンバ
+int enemy_clearflag : 敵が自陣ゴールまで来たフラグ
+int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 int enemytype : 敵の種類
 int bossflag : ボスかどうかのフラグ(0:ボス以外, 1: ボス)
-int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 int speed : 敵の動くスピード
 =============================
 メソッド
@@ -74,6 +75,7 @@ class Enemy
 public:
 	Pos pos;
 	int handle;
+	int enemy_clearflag;
 	int aliveflag;
 	int enemytype;
 	int bossflag;
