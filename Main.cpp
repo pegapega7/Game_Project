@@ -6,7 +6,7 @@ int gpUpdateKey();
 int KeyCalc_menu(int SelectNum);
 void Draw_menu();
 void KeyCalc(Character& c, Enemy e[],MapElement map[]);
-void Draw_game(Character& c, int gameovercount);
+void Draw_game(Character& c,int time, int gameovercount);
 int KeyCalc_ending(int SelectNum);
 void Draw_ending();
 int KeyCalc_gameover(int SelectNum);
@@ -15,7 +15,6 @@ void Draw_gameover();
 using namespace std;
 
 int Key[256];// キーが押されているフレーム数を格納する
-int time;//時間を記録
 
 /*****
 メイン関数
@@ -64,13 +63,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int frame_count = 0;
 	int clear_flag = 0;//クリアしたら1
 	int gameover_count = 0;
-
+	int time = 0;
+	int time_diff = 0;//処理の時間差
 	int start_time = 0;
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
 		frame_count++;
-		if (frame_count == 60) frame_count = 0;
+		if(frame_count == 60) frame_count = 0;
 		if(ScreenFlip() != 0) break;//裏画面を表画面に反映
 		if(ProcessMessage() != 0) break;//メッセージ処理
 		if(ClearDrawScreen() != 0) break;  // 画面を消す
@@ -127,6 +127,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Init_map();
 				clear_flag = 0;
 				gameover_count = 0;
+				time_diff = 0;
 				SRand(GetNowCount());//乱数の初期化
 				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
 			}
@@ -137,15 +138,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			/*********************計算部***********************/
 			time = GetNowCount() - start_time;
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
+			if (time < 60000) {
+				if (time - time_diff >= 3000) {//3秒ごと
+					int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
+					time_diff = time;
+					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
+							enemy[i].aliveflag = 1;
+							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
+							break;
+						}
+					}
+				}
+			}
+			else if (60000 <= time && time < 90000) {
+				if (time - time_diff >= 3000) {//3秒ごと
+					time_diff = time;
+					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 0) {
+							enemy[i].aliveflag = 1;
+							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
+							break;
+						}
+					}
+					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 2) {
+							enemy[i].aliveflag = 1;
+							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
+							break;
+						}
+					}
+				}
+			}
+			else if (time > 90000) {
+				boss[0].aliveflag = 1;
+				boss[0].pos = { 4 * CHIP_SIZE, 0 };
 
-			if((time/1000)%10 == 0){//3秒ごと
-				int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
-				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
-					if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
-						enemy[i].aliveflag = 1;
-						int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
-						enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
-						break;
+				if (time - time_diff >= 7000) {//7秒ごと
+					int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
+					time_diff = time;
+					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
+							enemy[i].aliveflag = 1;
+							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
+							break;
+						}
 					}
 				}
 			}
@@ -209,7 +250,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 			/************************描画部**************************/
-			Draw_game(myCharacter, gameover_count);//ゲーム画面の描画
+			Draw_game(myCharacter, time, gameover_count);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
@@ -308,6 +349,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 			clear_flag = 0;//クリアしたら1
 			gameover_count = 0;
+			time_diff = 0;
 			start_time = GetNowCount();
 			break;
 		default:
@@ -476,7 +518,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 なし
 =====================================
 *****/
-void Draw_game(Character& c, int gameover_count)
+void Draw_game(Character& c, int time, int gameover_count)
 {
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);

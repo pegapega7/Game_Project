@@ -2,7 +2,9 @@
 #ifndef _CHARACTER_H_INCLUDED_ //ヘッダが読み込まれてなかったら通る
 #define _CHARACTER_H_INCLUDED_ //ヘッダを読み込んだら定義する⇒次にヘッダが読み込まれてもifndefに入らず無視できる
 #include "DxLib.h"
-
+#include "windows.h"
+#include "sstream"
+#include "vector"
 
 //定数定義
 #define WINDOW_WIDTH  960
@@ -11,6 +13,7 @@
 #define MAP_HEIGHT 12
 #define CHIP_SIZE 64
 
+#define PI 3.1415926f
 
 /*****
 ===========================

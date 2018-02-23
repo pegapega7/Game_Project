@@ -163,7 +163,10 @@ void Move_enemy(Enemy& e)
 	case 0:
 		e.pos.y = e.pos.y + e.speed;
 		break;
-	case 1: break;
+	case 1: 
+		e.pos.x += std::cos(135 * PI / 180)*e.speed;
+		e.pos.y += std::sin(135 * PI / 180)*e.speed;
+		break;
 
 	case 2:
 		e.pos.y = e.pos.y + e.speed;
