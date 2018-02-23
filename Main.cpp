@@ -133,8 +133,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			break;
 		case 1://ゲーム画面
-			time = GetNowCount() - start_time;
+
 			/*********************計算部***********************/
+			time = GetNowCount() - start_time;
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
 
 			if((time/1000)%10 == 0){//3秒ごと
@@ -200,9 +201,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
-				if (enemy[i].enemy_clearflag == 1 && enemy[i].aliveflag == 1) {
+				if (enemy[i].enemy_clearflag == 1) {
 					gameover_count++;
-					enemy[i].aliveflag = 0;
+					enemy[i].enemy_clearflag = 0;
 				}
 			}
 
@@ -306,6 +307,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Init_map();
 			}
 			clear_flag = 0;//クリアしたら1
+			gameover_count = 0;
 			start_time = GetNowCount();
 			break;
 		default:

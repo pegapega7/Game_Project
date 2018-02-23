@@ -172,5 +172,9 @@ void Move_enemy(Enemy& e)
 		break;
 	}
 
-	if (e.pos.y > (MAP_HEIGHT - 1)*CHIP_SIZE) e.enemy_clearflag = 1;
+	if (e.pos.y > (MAP_HEIGHT - 1)*CHIP_SIZE) 
+	{ 
+		e.enemy_clearflag = 1; 
+		e.aliveflag = 0;
+	}
 }
