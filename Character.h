@@ -28,6 +28,17 @@ typedef struct {
 } Pos;
 
 /*****
+==========================
+矩形
+==========================
+int lx : 左上のx座標
+int ly : 左上のy座標
+int rx : 右下のx座標
+int ry : 右下のy座標
+*****/
+
+
+/*****
 =============================
 キャラクター用のクラス
 =============================
@@ -69,6 +80,7 @@ int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 int enemytype : 敵の種類
 int bossflag : ボスかどうかのフラグ(0:ボス以外, 1: ボス)
 int speed : 敵の動くスピード
+int move_pattern : 敵の動きのパターン管理用
 =============================
 メソッド
 =============================
@@ -83,6 +95,7 @@ public:
 	int enemytype;
 	int bossflag;
 	int speed;
+	int move_pattern;
 	Enemy(int enemytype_init);
 	~Enemy();
 	void Draw(Pos p, int handle);
@@ -90,7 +103,7 @@ public:
 
 /*****
 =============================
-技用のクラス
+弓用のクラス
 =============================
 メンバ
 int speed : 矢を動かすスピード（座標の変化率）
@@ -112,11 +125,11 @@ class Skill
 {
 private:
 public:
-	int speed = 16;
+	int speed;
 	Pos pos;
 	int handle;
 	int drawinterval;
-	int intervalflag = 0;
+	int intervalflag;
 	int intervalcount;
 	int shootflag;
 	int distance;

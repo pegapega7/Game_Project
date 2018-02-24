@@ -164,12 +164,29 @@ void Move_enemy(Enemy& e)
 		e.pos.y = e.pos.y + e.speed;
 		break;
 	case 1: 
-		e.pos.x += std::cos(135 * PI / 180)*e.speed;
-		e.pos.y += std::sin(135 * PI / 180)*e.speed;
+		if (e.move_pattern == 0) {
+			e.pos.x += std::cos(135 * PI / 180)*e.speed;
+			e.pos.y += std::sin(135 * PI / 180)*e.speed;
+		}
+		else if(e.move_pattern == 1) {
+			e.pos.x += std::cos(45 * PI / 180)*e.speed;
+			e.pos.y += std::sin(45 * PI / 180)*e.speed;
+		}
+		if (e.move_pattern == 0 && e.pos.x < 0)	e.move_pattern = 1;
+		else if (e.move_pattern == 1 && e.pos.x > (MAP_WIDTH-1)*CHIP_SIZE) e.move_pattern = 0;
 		break;
-
 	case 2:
 		e.pos.y = e.pos.y + e.speed;
+		break;
+	case 3:
+		if (e.move_pattern == 0) {
+			e.pos.x -= e.speed;
+		}
+		else if (e.move_pattern == 1) {
+			e.pos.x += e.speed;
+		}
+		if (e.move_pattern == 0 && e.pos.x < 0)	e.move_pattern = 1;
+		else if (e.move_pattern == 1 && e.pos.x > (MAP_WIDTH - 2)*CHIP_SIZE) e.move_pattern = 0;
 		break;
 	default : 
 		break;
