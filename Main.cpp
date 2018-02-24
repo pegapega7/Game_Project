@@ -123,7 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 
 				boss[0].handle = LoadGraph("images/boss1.png");
-				boss[0].pos = { 4 * CHIP_SIZE, 0 };
+				boss[0].pos = { 4 * CHIP_SIZE, CHIP_SIZE };
 				boss[0].speed = 2;
 				boss[0].aliveflag = 0;
 				boss[0].bossflag = 1;
@@ -165,10 +165,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 				SRand(GetNowCount());//乱数の初期化
 				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
+				PlaySound("images/stage2.mp3", DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 
 			break;
 		case 1://ゲーム画面
+
 			/*********************計算部***********************/
 			time = GetNowCount() - start_time;
 			KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
@@ -214,6 +216,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (boss[0].aliveflag == 0) {
 					boss[0].aliveflag = 1;
 					boss[0].HP = boss[0].MAXHP;
+					boss[0].pos = { 4 * CHIP_SIZE, CHIP_SIZE };
 				}
 
 				if (time - base_time[0] >= 7000) {//7秒ごと
@@ -243,9 +246,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵のタイプごとに描画
-				if (enemy[i].aliveflag == 1)
+			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵のタイプごとに座標を決定
+				if (enemy[i].aliveflag == 1) {
 					Move_enemy(enemy[i]);//敵の移動先を決める
+				}
 			}
 			if (boss[0].aliveflag == 1)
 				Move_enemy(boss[0]);
@@ -331,12 +335,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
 			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++)
 			{
-				if (enemy[i].aliveflag == 1)//敵が生きていれば描画
+				if (enemy[i].aliveflag == 1) {//敵が生きていれば描画
 					enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
+					switch (enemy[i].enemytype) {
+					case 0: 
+						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+						break;
+					case 1:
+						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE); 
+						break;
+					case 2: 
+						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+						break;
+					case 3:
+						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE); 
+						break;
+					default: break;
+					}
+				}
 			}
-			if (boss[0].aliveflag == 1)
+			if (boss[0].aliveflag == 1) {
 				boss[0].Draw(boss[0].pos, boss[0].handle);
-
+				DrawBox(boss[0].pos.x, boss[0].pos.y - 5, boss[0].pos.x + 128 / boss[0].MAXHP*boss[0].HP, boss[0].pos.y, GetColor(255, 0, 0), TRUE);
+			}
 			//チャージ中のみチャージ時間の描画
 			if (myCharacter.chargeflag == 1) {
 				DrawBox(myCharacter.pos.x - CHIP_SIZE / 4, myCharacter.pos.y + CHIP_SIZE, myCharacter.pos.x + CHIP_SIZE * 5 / 4, myCharacter.pos.y + CHIP_SIZE * 5 / 4, GetColor(0, 0, 0), TRUE);
@@ -379,8 +400,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			if (myCharacter.aliveflag == 0) { WinFlag = 3; SelectNum = 0; } //キャラクタが死んでいればゲームオーバー
-			if (clear_flag == 1) { WinFlag = 2; SelectNum = 0; }//ボスに当たれば終了
+			if (myCharacter.aliveflag == 0 || gameover_count >= 10) { WinFlag = 3; SelectNum = 0; StopSound(); } //キャラクタが死んでいればゲームオーバー
+			if (clear_flag == 1) { WinFlag = 2; SelectNum = 0; StopSound(); }//ボスに当たれば終了
 
 			break;
 		case 2:
@@ -464,6 +485,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				for (int i = 0; i < 100; i++) {
 					base_time[i] = 0;
 				}
+				PlaySound("images/stage2.mp3", DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 
 			break;
