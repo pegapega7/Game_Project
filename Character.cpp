@@ -127,23 +127,82 @@ int Skill::Hit(Pos ep,Pos sp)
 
 /*****
 ==========================
-“G‚Æ‚Ì“–‚½‚è”»’è: Hit_Enemy(Pos p, Pos ep)
+“G‚Æ©‹@‚Ì“–‚½‚è”»’è: Hit_Enemy( Character& c, Enemy& e)
 ==========================
 ˆø”
-Pos p : •\¦‚·‚éêŠ‚Ì¶ãÀ•W
-Pos ep: “G‚ÌÀ•W
+Character& c : ©‹@‚Ìî•ñ
+Enemy& e : “G‚Ìî•ñ
 =====================================
 1 : “G‚Æ“–‚½‚Á‚½”»’è
 0: “–‚½‚Á‚Ä‚¢‚È‚¢
 ==================================
 *****/
-int Hit_Enemy(Pos p, Pos ep)
+int Hit_Enemy(Character& c, Enemy& e)
 {
 	//“G‚Æ‚Ì“–‚½‚è”»’è
-	if (p.x < ep.x+CHIP_SIZE/4 && p.y < ep.y + CHIP_SIZE && (p.x + CHIP_SIZE/2) > ep.x && (p.y + CHIP_SIZE) > ep.y)
+	if (c.pos.x < e.pos.x+CHIP_SIZE/4 && c.pos.y < e.pos.y + CHIP_SIZE && (c.pos.x + CHIP_SIZE/2) > e.pos.x && (c.pos.y + CHIP_SIZE) > e.pos.y)
 		return 1;
 	return 0;
 }
+
+/*****
+==========================
+‹|‚Æ“G‚Ì“–‚½‚è”»’è: Hit_Skill(Enemy& e, Skill& s)
+==========================
+ˆø”
+Enemy& e :@“G‚Ìî•ñ
+Skill& s: ‹|E“G‚ÌUŒ‚‚Ìî•ñ
+=====================================
+1 : “G‚Æ“–‚½‚Á‚½”»’è
+0: “–‚½‚Á‚Ä‚¢‚È‚¢
+==================================
+*****/
+int Hit_Skill(Enemy& e, Skill& s)
+{
+	//“G‚Æ‚Ì“–‚½‚è”»’è
+	switch (e.enemytype) {
+	case 0:
+		if (e.pos.x + 16 < s.pos.x + 40 && e.pos.y < s.pos.y + CHIP_SIZE && (e.pos.x + 48) > s.pos.x + 8 && (e.pos.y + CHIP_SIZE) > s.pos.y) 
+			return 1;
+		break;
+	case 1:
+		if (e.pos.x + 16 < s.pos.x + 40 && e.pos.y < s.pos.y + CHIP_SIZE && (e.pos.x + 48) > s.pos.x + 8 && (e.pos.y + CHIP_SIZE) > s.pos.y) 
+			return 1;
+		break;
+	case 2:
+		if (e.pos.x + 16 < s.pos.x + 40 && e.pos.y < s.pos.y + CHIP_SIZE && (e.pos.x + 48) > s.pos.x + 8 && (e.pos.y + CHIP_SIZE) > s.pos.y)
+			return 1;
+		break;
+	case 3:
+		if (e.pos.x + 16 < s.pos.x + 40 && e.pos.y < s.pos.y + CHIP_SIZE && (e.pos.x + 112) > s.pos.x + 8 && (e.pos.y + CHIP_SIZE) > s.pos.y) 
+			return 1;
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+/*****
+==========================
+“G‚ÌUŒ‚‚Æ–¡•û‚Ì“–‚½‚è”»’è: Hit_Attack(Character& c, Skill& s)
+==========================
+ˆø”
+Character& c :@“G‚Ìî•ñ
+Skill& s: ‹|E“G‚ÌUŒ‚‚Ìî•ñ
+=====================================
+1 : “G‚Æ“–‚½‚Á‚½”»’è
+0: “–‚½‚Á‚Ä‚¢‚È‚¢
+==================================
+*****/
+int Hit_Attack(Character& c, Skill& s)
+{
+	//“G‚Æ‚Ì“–‚½‚è”»’è
+	if (c.pos.x + 16 < s.pos.x + 40 && c.pos.y < s.pos.y + 48 && (c.pos.x + 48) > s.pos.x + 8 && (c.pos.y + CHIP_SIZE) > s.pos.y + 8)
+		return 1;
+	return 0;
+}
+
 
 /*****
 =====================================

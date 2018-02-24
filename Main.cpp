@@ -71,6 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int time = 0;
 	int base_time[100] = {0};//処理の時間差
 	int start_time = 0;
+	int durability = 10;//耐久度
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
@@ -92,20 +93,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				myCharacter.move_v = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.aliveflag = 1;
+				myCharacter.HP = 10;
 
 				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 					switch (enemy[i].enemytype) {
 					case 0:
 						enemy[i].handle = LoadGraph("images/enemy1.png");
 						enemy[i].speed = 1;
+						enemy[i].MAXHP = 3;
+
 						break;
 					case 1:
 						enemy[i].handle = LoadGraph("images/enemy2.png");
 						enemy[i].speed = 2;
+						enemy[i].MAXHP = 2;
 						break;
 					case 2:
 						enemy[i].handle = LoadGraph("images/enemy3.png");
 						enemy[i].speed = 5;
+						enemy[i].MAXHP = 1;
 						break;
 					default:
 						break;
@@ -123,6 +129,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				boss[0].bossflag = 1;
 				boss[0].enemy_clearflag = 0;
 				boss[0].move_pattern = 0;
+				boss[0].MAXHP = 15;
+
 
 				for (int i = 0; i < 100; i++) {
 					arrow_1[i].speed = 16;
@@ -134,6 +142,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					arrow_1[i].distance = 0;
 					arrow_1[i].range = 0;
 					arrow_1[i].chargetime = 0;
+					arrow_1[i].damage = 1;
 				}
 
 				for (int i = 0; i < 100; i++) {
@@ -146,6 +155,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					boss_atk_1[i].distance = 0;
 					boss_atk_1[i].range = 0;
 					boss_atk_1[i].chargetime = 0;
+					boss_atk_1[i].damage = 3;
 				}
 				Init_map();
 				clear_flag = 0;
@@ -168,6 +178,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					base_time[0] = time;
 					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
+							enemy[i].HP = enemy[i].MAXHP;
 							enemy[i].aliveflag = 1;
 							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
 							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
@@ -181,6 +192,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					base_time[0] = time;
 					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 0) {
+							enemy[i].HP = enemy[i].MAXHP;
 							enemy[i].aliveflag = 1;
 							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
 							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
@@ -189,6 +201,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 2) {
+							enemy[i].HP = enemy[i].MAXHP;
 							enemy[i].aliveflag = 1;
 							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
 							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
@@ -198,13 +211,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			else if (time >= 90000) {
-				boss[0].aliveflag = 1;
+				if (boss[0].aliveflag == 0) {
+					boss[0].aliveflag = 1;
+					boss[0].HP = boss[0].MAXHP;
+				}
 
 				if (time - base_time[0] >= 7000) {//7秒ごと
 					int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
 					base_time[0] = time;
 					for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
+							enemy[i].HP = enemy[i].MAXHP;
 							enemy[i].aliveflag = 1;
 							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
 							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
@@ -259,31 +276,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					arrow_1[i].pos.y += sin(270 * PI / 180)*arrow_1[i].speed;
 					for (int j = 0; j < ENEMY_TYPE_NUM*ENEMY_NUM; j++) {
 						if (enemy[j].aliveflag == 1) {//敵が生きていればあたり判定
-							if (arrow_1[i].Hit(enemy[j].pos, arrow_1[i].pos) == 1) {
-								enemy[j].aliveflag = 0;
+							if(Hit_Skill(enemy[j], arrow_1[i]) == 1){
+								enemy[j].HP -= arrow_1[i].damage;
 								arrow_1[i].shootflag = 0;
 								arrow_1[i].range = 0;
 								arrow_1[i].distance = 0;
 							}
+							if (enemy[j].HP <= 0) enemy[j].aliveflag = 0;//HPが0になったとき
 						}
 					}
 					if (boss[0].aliveflag == 1) {//ボスが生きていればあたり判定
-						if (arrow_1[i].Hit(boss[0].pos, arrow_1[i].pos) == 1) {
-							clear_flag = 1;
+						if (Hit_Skill(boss[0], arrow_1[i]) == 1) {
+							boss[0].HP -= arrow_1[i].damage;
 							arrow_1[i].shootflag = 0;
 							arrow_1[i].range = 0;
 							arrow_1[i].distance = 0;
+						}
+						if (boss[0].HP <= 0) {
+							clear_flag = 1;
+							boss[0].aliveflag = 0;
 						}
 					}
 				}
 			}
 
-			//敵の攻撃とキャラクターのあたり判定
+			//敵の弾とキャラクターのあたり判定
 			for (int i = 0; i < 100; i++) {
 				if (boss_atk_1[i].shootflag == 1) {//技の発動フラグが立っているとき当たり判定
 					boss_atk_1[i].pos.x += cos(90 * PI / 180)*boss_atk_1[i].speed;
 					boss_atk_1[i].pos.y += sin(90 * PI / 180)*boss_atk_1[i].speed;
-					if (boss_atk_1[i].Hit(myCharacter.pos, boss_atk_1[i].pos)) {
+					if (Hit_Attack(myCharacter, boss_atk_1[i]) == 1) {
+						myCharacter.HP -= boss_atk_1[i].damage;
+						boss_atk_1[i].shootflag = 0;
+					}
+					if (myCharacter.HP <= 0) {
 						myCharacter.aliveflag = 0;
 					}
 				}
@@ -370,6 +396,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				myCharacter.move_v = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.aliveflag = 1;
+				myCharacter.HP = 10;
 
 				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 					switch (enemy[i].enemytype) {
@@ -401,6 +428,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				boss[0].bossflag = 1;
 				boss[0].enemy_clearflag = 0;
 				boss[0].move_pattern = 0;
+				boss[0].HP = 15;
 
 				for (int i = 0; i < 100; i++) {
 					arrow_1[i].speed = 16;
@@ -573,18 +601,24 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 		c.move_v = 3;
 		c.pos.y -= 6;
 	}
-	/*
+	
 	 for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵とのあたり判定
-		 if (Hit_Enemy(c.pos, e[i].pos) == 1 && e[i].aliveflag == 1) {
+		 if (Hit_Enemy(c, e[i]) == 1 && e[i].aliveflag == 1) {
+			 e[i].aliveflag = 0;
 			 hitenemyflag = 1;
-			 break;
+			 c.HP--;
+		 }
+		 if (c.HP <= 0) {
+			 c.aliveflag = 0;
 		 }
 	 }
-	 */
+	 
+	 /*
 	 if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
 		 c.pos = oldp;
 		 c.aliveflag = 0;//ゲームオーバー
 	 }
+	 */
 
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
@@ -608,8 +642,21 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 *****/
 void Draw_game(Character& c, int time, int gameover_count)
 {
+
+	SetFontSize(20); // 描画する文字列のサイズを設定
+	SetFontThickness(3); // 描画する文字列の太さを設定
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
+
+	DrawFormatString(Status[0].x, Status[0].y, GetColor(255, 255, 255), Status[0].name.c_str());
+	if(c.HP >= 7) DrawBox(650, 150, 650 + 30*c.HP, 200, GetColor(0, 255, 0), TRUE);
+	else if(4 <= c.HP && c.HP < 7)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 255, 0), TRUE);
+	else if ( c.HP < 4)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 0, 0), TRUE);
+
+	DrawFormatString(Status[1].x, Status[1].y, GetColor(255, 255, 255), Status[1].name.c_str());
+	if ((10- gameover_count) >= 7) DrawBox(650, 250, 650 + 30 * (10-gameover_count), 300, GetColor(0, 255, 0), TRUE);
+	else if (4 <= (10 - gameover_count) && (10 - gameover_count) < 7)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 255, 0), TRUE);
+	else if ((10 - gameover_count) < 4)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 0, 0), TRUE);
 
 	//でばっぐ用に座標を出力
 	ostringstream position;
@@ -621,8 +668,6 @@ void Draw_game(Character& c, int time, int gameover_count)
 	timer << debug[2].name.c_str() << time/1000 << " s";
 	ostringstream gameovercounter;
 	gameovercounter << debug[3].name.c_str() << gameover_count;
-	SetFontSize(20); // 描画する文字列のサイズを設定
-	SetFontThickness(3); // 描画する文字列の太さを設定
 	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
 	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
 	DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());

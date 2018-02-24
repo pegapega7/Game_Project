@@ -47,6 +47,7 @@ int handle : キャラクタ画像のデータハンドル
 Pos pos : キャラクタの座標（画像の左上）
 int move_v : キャラクタを動かしている向き
 int chargeflag : キャラクタが弓をチャージしている状態か(0:チャージなし, 1:チャージしている)
+int HP : キャラクタのHP
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -62,6 +63,7 @@ public:
 	int handle;
 	int chargeflag;
 	int aliveflag;
+	int HP;
 
 	Character(int handle_init);
 	~Character();
@@ -81,6 +83,8 @@ int enemytype : 敵の種類
 int bossflag : ボスかどうかのフラグ(0:ボス以外, 1: ボス)
 int speed : 敵の動くスピード
 int move_pattern : 敵の動きのパターン管理用
+int HP : 敵のHP
+int MAXHP : 敵の最大HP
 =============================
 メソッド
 =============================
@@ -96,6 +100,8 @@ public:
 	int bossflag;
 	int speed;
 	int move_pattern;
+	int HP;
+	int MAXHP;
 	Enemy(int enemytype_init);
 	~Enemy();
 	void Draw(Pos p, int handle);
@@ -115,6 +121,7 @@ int shootflag : 矢が飛んでいるかどうかのフラグ(1:飛んでいる, 0:飛んでいない)
 int distance : 矢が飛んでいる距離
 int range : 矢の飛距離
 int chargetime : どれだけチャージされた矢か（飛距離に影響）
+int damage : 一発のダメージ量
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -135,6 +142,7 @@ public:
 	int distance;
 	int range;
 	int chargetime;
+	int damage;
 
 	//Skill(int handle_init, int drawinterval_init, int intervalcount_init);
 	void Draw(Pos p, int handle, int drawinterval);
@@ -142,6 +150,8 @@ public:
 };
 
 
-extern int Hit_Enemy( Pos p, Pos ep);
+extern int Hit_Enemy( Character& c, Enemy& e);
+extern int Hit_Skill(Enemy& e, Skill& s);
+extern int Hit_Attack(Character& c, Skill& s);
 extern void Move_enemy(Enemy& e);
 #endif

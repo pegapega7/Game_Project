@@ -36,6 +36,11 @@ typedef struct {
 	int flag;
 } MenuElement;
 
+MenuElement Status[2] = {
+	{650, 120, "HP", 1 }, 
+	{650, 220, "耐久度", 1 },
+};
+
 MenuElement MainMenu[2] = {
 	{ 500, 500, "ゲームスタート", 1 }, // タグの中身の順番で格納される。xに80が、yに100が、nameに"ゲームスタート"が
 	{ 500, 550, "ゲーム終了", 0 },
