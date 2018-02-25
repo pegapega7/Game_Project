@@ -47,7 +47,10 @@ int handle : キャラクタ画像のデータハンドル
 Pos pos : キャラクタの座標（画像の左上）
 int move_v : キャラクタを動かしている向き
 int chargeflag : キャラクタが弓をチャージしている状態か(0:チャージなし, 1:チャージしている)
+int cancharge : キャラクタが矢を打てる状態か(0:打てない, 1:打てる)
+int shootflag : 矢を打っている状態(0:打っていない, 打っている)
 int HP : キャラクタのHP
+int shootcount : 打った矢の数を保存
 =============================
 メソッド
 Character() : キャラクタの初期設定
@@ -62,8 +65,11 @@ public:
 	int move_v;//移動している向き
 	int handle;
 	int chargeflag;
+	int cancharge;
+	int shootflag;
 	int aliveflag;
 	int HP;
+	int shootcount;
 
 	Character(int handle_init);
 	~Character();
@@ -85,6 +91,7 @@ int speed : 敵の動くスピード
 int move_pattern : 敵の動きのパターン管理用
 int HP : 敵のHP
 int MAXHP : 敵の最大HP
+int point : 敵キャラクタのポイント
 =============================
 メソッド
 =============================
@@ -102,6 +109,7 @@ public:
 	int move_pattern;
 	int HP;
 	int MAXHP;
+	int point;
 	Enemy(int enemytype_init);
 	~Enemy();
 	void Draw(Pos p, int handle);

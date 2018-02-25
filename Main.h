@@ -36,9 +36,10 @@ typedef struct {
 	int flag;
 } MenuElement;
 
-MenuElement Status[2] = {
+MenuElement Status[3] = {
 	{650, 120, "HP", 1 }, 
 	{650, 220, "耐久度", 1 },
+	{650, 320, "スコア ", 1},
 };
 
 MenuElement MainMenu[2] = {
