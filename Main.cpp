@@ -3,13 +3,13 @@
 #include "Map.h"
 
 int gpUpdateKey();
-int KeyCalc_menu(int SelectNum);
+int KeyCalc_menu(int SelectNum, int bgm_handle[], int se_handle[]);
 void Draw_menu();
 void KeyCalc(Character& c, Enemy e[],MapElement map[]);
-void Draw_game(Character& c,int time, int gameovercount,int point);
-int KeyCalc_ending(int SelectNum);
+void Draw_game(Character& c,int time, int gameovercount,int point, int tips);
+int KeyCalc_ending(int SelectNum, int bgm_handle[], int se_handle[]);
 void Draw_ending();
-int KeyCalc_gameover(int SelectNum);
+int KeyCalc_gameover(int SelectNum, int bgm_handle[], int se_handle[]);
 void Draw_gameover();
 void Draw_result(Character& c, int durability, int point, int minusp, int timing);
 
@@ -34,7 +34,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	int SelectNum = 0; // 現在の選択メニュー番号
 
-	// 画面に絵をロード
+
+//画面用画像をロード
+	 int screen[4] =
+	{
+		LoadGraph("images/title.png"),
+		LoadGraph("images/gameover.png"),
+		LoadGraph("images/result.png"),
+		LoadGraph("images/ending.png"),
+	};
+
+	int bgm_handle[2] =
+	{
+		LoadSoundMem("musics/bgm/stage2.mp3"),
+		LoadSoundMem("musics/bgm/stage2.mp3"),
+	};
+
+	int se_handle[5] =
+	{
+		LoadSoundMem("musics/se/cursor10.mp3"),
+		LoadSoundMem("musics/se/decision24.mp3"),
+
+
+	};
+
+	// 絵をロード
+
 	//キャラクタ
 	Character myCharacter(LoadGraph("images/mycharacter2.png"));
 
@@ -55,9 +80,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int boss_atk_1_handle = LoadGraph("images/boss_atk_1.png");
 
 
-	MapElement MapChips[2] = {
+	MapElement MapChips[4] = {
 		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
-		{ LoadGraph("images/tree.png"), 1 }, //マップ番号２：木
+//		{ LoadGraph("images/tree.png"), 1 }, //マップ番号２：木
+		{ LoadGraph("images/floor.png"), 0 }, //マップ番号３：床
+		{ LoadGraph("images/wall.png"), 1 }, //マップ番号４：城壁
+		{ LoadGraph("images/stairs.png"), 0 }, //マップ番号５：階段
 	};
 
 	int enemy_hitflag = 0;//0ならヒットなし,1ならヒット
@@ -76,6 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int totalpoint = 0;//総合ポイント
 	int minuspoint = 0;//マイナスポイント
 	int cleartime = 0;
+	int tips = 0;//負けたタイミングのTIPS
 	/*****メインループ*****/	
 	while (WinFlag >= 0) {//終了が押されるまで
 		/***毎ループで必要な処理***/
@@ -89,11 +118,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		/*************************/
 		switch (WinFlag) {
 		case 0://メニュー画面
-			WinFlag = KeyCalc_menu(SelectNum);//メニュー選択
+			DrawGraph(0, 0, screen[0], FALSE); //タイトル画面の描画
+			WinFlag = KeyCalc_menu(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_menu();//メニュー描画
 
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
-				myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
+				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
 				myCharacter.move_v = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.aliveflag = 1;
@@ -177,7 +207,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
 				totalpoint = 0;
 				minuspoint = 0;
-				PlaySound("images/stage2.mp3", DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
+				PlaySoundMem(bgm_handle[0], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 
 			break;
@@ -208,6 +238,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 0) {
 							enemy[i].HP = enemy[i].MAXHP;
 							enemy[i].aliveflag = 1;
+
 							int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
 							enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
 							break;
@@ -279,7 +310,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			////矢の発射
-
 			if (Key[KEY_INPUT_Z] == 0 && myCharacter.chargeflag == 1) {//Zキーが押されたとき技の発動フラグを立てる
 				base_time[2] = time;//発動タイミングを保存
 				minuspoint++;
@@ -392,7 +422,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 			/************************描画部**************************/
-			Draw_game(myCharacter, time, gameover_count, totalpoint);//ゲーム画面の描画
+			Draw_game(myCharacter, time, gameover_count, totalpoint, tips);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
 			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
@@ -445,19 +475,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			if (myCharacter.aliveflag == 0 || gameover_count >= 10) { WinFlag = 3; SelectNum = 0; StopSound(); } //キャラクタが死んでいればゲームオーバー
-			if (clear_flag == 1) { WinFlag = 4; SelectNum = 0; StopSound(); cleartime = GetNowCount(); }//ボスに当たれば終了
+			if (myCharacter.aliveflag == 0) { WinFlag = 3; SelectNum = 0; tips = 1;  StopSoundMem(bgm_handle[0]); } //キャラクタが死んでいればゲームオーバー
+			if (gameover_count >= 10) { WinFlag = 3; SelectNum = 0; tips = 2; StopSoundMem(bgm_handle[0]);	} //ゲームオーバー
+			if (clear_flag == 1) { WinFlag = 4; SelectNum = 0; StopSound(); cleartime = GetNowCount(); StopSoundMem(bgm_handle[0]);}//ボスに当たれば終了
 
 			break;
 		case 2:
-			WinFlag = KeyCalc_ending(SelectNum);//メニュー選択
+			DrawGraph(0, 0, screen[3], FALSE); //エンディング画像の描画
+			WinFlag = KeyCalc_ending(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_ending();
 			break;
 		case 3:
-			WinFlag = KeyCalc_gameover(SelectNum);//メニュー選択
+			DrawGraph(0, 0, screen[1], FALSE); //ゲームオーバー画像の描画
+			WinFlag = KeyCalc_gameover(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_gameover();
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
-				myCharacter.pos = { 5 * CHIP_SIZE, 9 * CHIP_SIZE };
+				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
 				myCharacter.move_v = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.aliveflag = 1;
@@ -541,15 +574,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
 				totalpoint = 0;
 				minuspoint = 0;
-				PlaySound("images/stage2.mp3", DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
+				PlaySoundMem(bgm_handle[0], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 			break;
 		case 4 :
+			DrawGraph(0, 0, screen[3], FALSE); //リザルト画像の描画
 			time = GetNowCount() - cleartime;
 			Draw_result(myCharacter, durability, totalpoint, minuspoint, time);
 			if(time >= 7000) {
 				if (Key[KEY_INPUT_RETURN] == 1 || Key[KEY_INPUT_SPACE] == 1) { //スペースキーまたはエンターキーが押されたとき
 					WinFlag = 2; //終了画面へ
+					tips = 0;
 				}
 			}
 
@@ -604,15 +639,17 @@ int SelectNum : 現在選択中のメニュー
 -1 : ゲーム終了が選択されたとき
 =====================================
 *****/
-int KeyCalc_menu(int SelectNum)
+int KeyCalc_menu(int SelectNum, int bgm_handle[], int se_handle[])
 {
 	if (Key[KEY_INPUT_DOWN] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = (SelectNum + 1) % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK); 
 	}
 	if (Key[KEY_INPUT_UP] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = SelectNum % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK);
 	}
 	if (Key[KEY_INPUT_DOWN] == 1 || Key[KEY_INPUT_UP] == 1) { // 下キーが押された瞬間だけ処理
 		for (int i = 0; i < 2; i++) {              // メニュー項目数である2個ループ処理
@@ -626,7 +663,7 @@ int KeyCalc_menu(int SelectNum)
 	}
 
 	if (Key[KEY_INPUT_RETURN] == 1 || Key[KEY_INPUT_SPACE] == 1) { //スペースキーまたはエンターキーが押されたとき
-		if (MainMenu[0].flag == 1) return 1; //"ゲームスタート"が選択されている
+		if (MainMenu[0].flag == 1) { PlaySoundMem(se_handle[1], DX_PLAYTYPE_BACK); return 1; } //"ゲームスタート"が選択されている
 		if (MainMenu[1].flag == 1) return -1; //"ゲーム終了"が選択されている
 	}
 
@@ -675,37 +712,38 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
 		c.move_v = 0;
 	    c.pos.x += 6;
+		if (Hit_map(map, c) == 1) c.pos.x = oldp.x;
+
 	}
     if (Key[KEY_INPUT_DOWN] >= 1) {
 		c.move_v = 1;
 		c.pos.y += 6;
+		if (Hit_map(map, c) == 1) c.pos.y = oldp.y;
 	}
 	if (Key[KEY_INPUT_LEFT] >= 1) {
 		c.move_v = 2;
 		c.pos.x -= 6;
+		if (Hit_map(map, c) == 1) c.pos.x = oldp.x;
 	}
 	if (Key[KEY_INPUT_UP] >= 1) {
 		c.move_v = 3;
 		c.pos.y -= 6;
+		if (Hit_map(map, c) == 1) c.pos.y = oldp.y;
 	}
 	
 	 for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵とのあたり判定
-		 if (Hit_Enemy(c, e[i]) == 1 && e[i].aliveflag == 1) {
-			 e[i].aliveflag = 0;
-			 hitenemyflag = 1;
-			 c.HP--;
+		 if (c.pos.y < 10 * CHIP_SIZE) {
+			 if (Hit_Enemy(c, e[i]) == 1 && e[i].aliveflag == 1) {
+				 e[i].aliveflag = 0;
+				 hitenemyflag = 1;
+				 c.HP--;
+				 
+			 }
 		 }
 		 if (c.HP <= 0) {
 			 c.aliveflag = 0;
 		 }
 	 }
-	 
-	 /*
-	 if (Hit_map(map, c.move_v, c.pos, oldp) == 1 || hitenemyflag == 1) {//マップとの当たり判定を計算(１なら進めないようにする)
-		 c.pos = oldp;
-		 c.aliveflag = 0;//ゲームオーバー
-	 }
-	 */
 
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
@@ -727,7 +765,7 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 なし
 =====================================
 *****/
-void Draw_game(Character& c, int time, int gameover_count, int point)
+void Draw_game(Character& c, int time, int gameover_count, int point, int tips)
 {
 
 	SetFontSize(20); // 描画する文字列のサイズを設定
@@ -749,20 +787,29 @@ void Draw_game(Character& c, int time, int gameover_count, int point)
 	score << Status[2].name.c_str() << point;
 	DrawFormatString(Status[2].x, Status[2].y, GetColor(255, 255, 255), score.str().c_str());
 
-	//でばっぐ用に座標を出力
-	ostringstream position;
-	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
-	ostringstream key;
-	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
-	//debug[0].name = position.str();
-	ostringstream timer;
-	timer << debug[2].name.c_str() << time/1000 << " s";
-	ostringstream gameovercounter;
-	gameovercounter << debug[3].name.c_str() << gameover_count;
-	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
-	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
-	DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
-	DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
+	DrawFormatString(manual[0].x, manual[0].y, GetColor(255, 255, 255), manual[0].name.c_str());
+	DrawFormatString(manual[1].x, manual[1].y, GetColor(255, 255, 255), manual[1].name.c_str());
+	DrawFormatString(manual[2].x, manual[2].y, GetColor(255, 255, 255), manual[2].name.c_str());
+	DrawFormatString(manual[3].x, manual[3].y, GetColor(255, 255, 255), manual[3].name.c_str());
+	if (tips == 0) DrawFormatString(manual[4].x, manual[4].y, GetColor(255, 255, 255), manual[4].name.c_str());
+	else if (tips == 1) DrawFormatString(manual[5].x, manual[5].y, GetColor(255, 255, 255), manual[5].name.c_str());
+	else if (tips == 2) DrawFormatString(manual[6].x, manual[6].y, GetColor(255, 255, 255), manual[6].name.c_str());
+
+	////でばっぐ用に座標を出力
+	//ostringstream position;
+	//position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
+	//ostringstream key;
+	//key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
+	////debug[0].name = position.str();
+	//ostringstream timer;
+	//timer << debug[2].name.c_str() << time/1000 << " s";
+	//ostringstream gameovercounter;
+	//gameovercounter << debug[3].name.c_str() << gameover_count;
+	//DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
+	//DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
+	//DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
+	//DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
+
 }
 
 /*****
@@ -778,15 +825,17 @@ int SelectNum : 現在選択中のメニュー
 2 : エンディング画面の維持
 =====================================
 *****/
-int KeyCalc_ending(int SelectNum)
+int KeyCalc_ending(int SelectNum, int bgm_handle[], int se_handle[])
 {
 	if (Key[KEY_INPUT_DOWN] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = (SelectNum + 1) % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK);
 	}
 	if (Key[KEY_INPUT_UP] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = SelectNum % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK);
 	}
 	if (Key[KEY_INPUT_DOWN] == 1 || Key[KEY_INPUT_UP] == 1) { // 下キーが押された瞬間だけ処理
 		for (int i = 0; i < 2; i++) {              // メニュー項目数である2個ループ処理
@@ -800,7 +849,7 @@ int KeyCalc_ending(int SelectNum)
 	}
 
 	if (Key[KEY_INPUT_RETURN] == 1 || Key[KEY_INPUT_SPACE] == 1) { //スペースキーまたはエンターキーが押されたとき
-		if (Ending[0].flag == 1) return 0; //"タイトルに戻る"が選択されている
+		if (Ending[0].flag == 1) { PlaySoundMem(se_handle[1], DX_PLAYTYPE_BACK); return 0; } //"タイトルに戻る"が選択されている
 		if (Ending[1].flag == 1) return -1; //"ゲーム終了"が選択されている
 	}
 
@@ -843,16 +892,18 @@ int SelectNum : 現在選択中のメニュー
 3 : ゲームオーバー画面の維持
 =====================================
 *****/
-int KeyCalc_gameover(int SelectNum)
+int KeyCalc_gameover(int SelectNum, int bgm_handle[], int se_handle[])
 {
 
 	if (Key[KEY_INPUT_DOWN] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = (SelectNum + 1) % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK);
 	}
 	if (Key[KEY_INPUT_UP] == 1) { // 上キーが押された瞬間だけ処理
 
 		SelectNum = SelectNum % 2; // 現在の選択項目を一つ上にずらす(逆ループする)
+		PlaySoundMem(se_handle[0], DX_PLAYTYPE_BACK);
 	}
 	if (Key[KEY_INPUT_DOWN] == 1 || Key[KEY_INPUT_UP] == 1) { // 下キーが押された瞬間だけ処理
 		for (int i = 0; i < 2; i++) {              // メニュー項目数である2個ループ処理
@@ -866,6 +917,7 @@ int KeyCalc_gameover(int SelectNum)
 	}
 
 	if (Key[KEY_INPUT_RETURN] == 1 || Key[KEY_INPUT_SPACE] == 1) { //スペースキーまたはエンターキーが押されたとき
+		PlaySoundMem(se_handle[1], DX_PLAYTYPE_BACK);
 		if (Gameover[0].flag == 1) return 1; //"リトライ"が選択されている
 		if (Gameover[1].flag == 1) return 0; //"タイトルに戻る"が選択されている
 	}
@@ -927,7 +979,7 @@ void Draw_result(Character& c, int durability, int point, int minusp, int timing
 
 	ostringstream message;
 	message << "Press Enter or Space";
-	if (7000 > timing) {
+	if (7000 < timing) {
 		DrawFormatString(330, 600, GetColor(0, 0, 0), message.str().c_str());
 	}
 
