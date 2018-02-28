@@ -112,7 +112,7 @@ int Hit_map(MapElement map[], Character& c)
 	//	}
 	//}
 
-	if (c.pos.x < 9 * CHIP_SIZE - 8 && c.pos.y <  11 * CHIP_SIZE - 16 && (c.pos.x + CHIP_SIZE / 2) > CHIP_SIZE + 8 && (c.pos.y + CHIP_SIZE) > 10 * CHIP_SIZE)
+	if (c.pos.x < 9 * CHIP_SIZE - 8 && c.pos.y <  11 * CHIP_SIZE - 16 && (c.pos.x + CHIP_SIZE) > CHIP_SIZE + 8 && (c.pos.y + CHIP_SIZE) > 10 * CHIP_SIZE)
 		return 1;
 	return 0;
 }
