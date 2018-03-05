@@ -516,19 +516,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if (myCharacter.aliveflag == 0) {
 				WinFlag = 3; SelectNum = 0; tips = 1;
-				StopSoundMem(bgm_handle[0]);
+				StopSoundMem(bgm_handle[1]);
 				PlaySoundMem(se_handle[6], DX_PLAYTYPE_BACK);
 			} //キャラクタが死んでいればゲームオーバー
 			if (gameover_count >= 10) {
 				WinFlag = 3;
 				SelectNum = 0;
 				tips = 2;
-				StopSoundMem(bgm_handle[0]);
+				StopSoundMem(bgm_handle[1]);
 				PlaySoundMem(se_handle[6], DX_PLAYTYPE_BACK);
 			} //ゲームオーバー
 			if (clear_flag == 1) {
-				if (CheckSoundMem(se_handle[9]) == 0 && CheckSoundMem(bgm_handle[0]) == 1) {
-					StopSoundMem(bgm_handle[0]);
+				if (CheckSoundMem(se_handle[9]) == 0 && CheckSoundMem(bgm_handle[1]) == 1) {
+					StopSoundMem(bgm_handle[1]);
 					PlaySoundMem(se_handle[9], DX_PLAYTYPE_BACK);
 				}
 				int a = CheckSoundMem(se_handle[9]);
