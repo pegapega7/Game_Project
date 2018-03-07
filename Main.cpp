@@ -52,23 +52,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	int se_handle[11] =
 	{
-		LoadSoundMem("musics/se/cursor10.mp3"), //メニュー選択音
-		LoadSoundMem("musics/se/decision24.mp3"), //メニュー決定音
-		LoadSoundMem("musics/se/sen_ge_byun02.mp3"),//弓を打つ音
-		LoadSoundMem("musics/se/sen_ge_ya_sasaru04.mp3"),//弓が当たる音
-		LoadSoundMem("musics/se/down1.mp3"),//敵が倒れる音
-		LoadSoundMem("musics/se/se_maoudamashii_se_stairs.mp3"),//敵に突破されるときの音
-		LoadSoundMem("musics/se/se_maoudamashii_jingle13.mp3"),//ゲームオーバー
-		LoadSoundMem("musics/se/drum-japanese1.mp3"),//結果発表
-		LoadSoundMem("musics/se/drum-japanese2.mp3"),//最終結果発表
-		LoadSoundMem("musics/se/jingle06.mp3"),//クリア
-		LoadSoundMem("musics/se/kick-low1.mp3"),//最終結果発表
+		LoadSoundMem("musics/se/cursor10.mp3"), //メニュー選択音 : 0
+		LoadSoundMem("musics/se/decision24.mp3"), //メニュー決定音 : 1
+		LoadSoundMem("musics/se/sen_ge_byun02.mp3"),//弓を打つ音 : 2
+		LoadSoundMem("musics/se/sen_ge_ya_sasaru04.mp3"),//弓が当たる音 : 3
+		LoadSoundMem("musics/se/down1.mp3"),//敵が倒れる音 : 4
+		LoadSoundMem("musics/se/se_maoudamashii_se_stairs.mp3"),//敵に突破されるときの音 : 5
+		LoadSoundMem("musics/se/se_maoudamashii_jingle13.mp3"),//ゲームオーバー : 6
+		LoadSoundMem("musics/se/drum-japanese1.mp3"),//結果発表 : 7
+		LoadSoundMem("musics/se/drum-japanese2.mp3"),//最終結果発表 : 8
+		LoadSoundMem("musics/se/jingle06.mp3"),//クリア : 9
+		LoadSoundMem("musics/se/kick-low1.mp3"),//敵の攻撃がヒット : 10
 	};
 
 	// 絵をロード
 
 	//キャラクタ
-	Character myCharacter(LoadGraph("images/mycharacter2.png"));
+	Character myCharacter(LoadGraph("images/mycharacter.png"));
 
 	
 	//敵
@@ -436,6 +436,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						boss_atk_1[i].pos.x += cos(90 * PI / 180)*boss_atk_1[i].speed;
 						boss_atk_1[i].pos.y += sin(90 * PI / 180)*boss_atk_1[i].speed;
 						if (Hit_Attack(myCharacter, boss_atk_1[i]) == 1) {
+							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
 							myCharacter.HP -= boss_atk_1[i].damage;
 							boss_atk_1[i].shootflag = 0;
 						}
@@ -463,7 +464,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Draw_game(myCharacter, time, gameover_count, totalpoint, tips);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
-			myCharacter.Draw(myCharacter.pos, myCharacter.handle); //自キャラの描画
+			myCharacter.Draw(myCharacter.pos, myCharacter.handle, myCharacter.chargeflag); //自キャラの描画
+
 			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++)
 			{
 				if (enemy[i].aliveflag == 1) {//敵が生きていれば描画
@@ -549,6 +551,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawGraph(0, 0, screen[1], FALSE); //ゲームオーバー画像の描画
 			WinFlag = KeyCalc_gameover(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_gameover();
+			if (WinFlag == 0) 	StopSoundMem(se_handle[6]);
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
 				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
 				myCharacter.move_v = 0;
@@ -634,6 +637,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
 				totalpoint = 0;
 				minuspoint = 0;
+				StopSoundMem(se_handle[6]);
 				PlaySoundMem(bgm_handle[1], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 			break;

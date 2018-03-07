@@ -28,9 +28,14 @@ int handle : データハンドル
 ====================
 
 *****/
-void Character::Draw(Pos p, int handle)
+void Character::Draw(Pos p, int handle, int chargeflag)
 {
-	DrawGraph(p.x, p.y, handle, TRUE); //画像の描画
+	if (chargeflag == 0) {
+		DrawRectGraph(p.x, p.y, 0, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+	}
+	else if (chargeflag == 1) {
+		DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+	}
 }
 
 

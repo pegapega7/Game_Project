@@ -73,7 +73,7 @@ public:
 
 	Character(int handle_init);
 	~Character();
-	void Draw(Pos p, int handle);
+	void Draw(Pos p, int handle,int chargeflag);
 };
 
 /******
