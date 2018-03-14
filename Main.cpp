@@ -352,10 +352,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if (charge_count < 60) {
 						myCharacter.shootcount = 0;
 					}
-					else if (60 <= charge_count && charge_count < 80) {
+					else if (50 <= charge_count && charge_count < 75) {
 						myCharacter.shootcount = 2;
 					}
-					else if (80 <= charge_count && charge_count < 100) {
+					else if (75 <= charge_count && charge_count < 100) {
 						myCharacter.shootcount = 3;
 					}
 					else if (100 == charge_count) {
@@ -494,12 +494,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			//チャージ中のみチャージ時間の描画
 			if (myCharacter.chargeflag == 1) {
 				DrawBox(myCharacter.pos.x - CHIP_SIZE / 4, myCharacter.pos.y + CHIP_SIZE, myCharacter.pos.x + CHIP_SIZE * 5 / 4, myCharacter.pos.y + CHIP_SIZE * 5 / 4, GetColor(0, 0, 0), TRUE);
-				if (charge_count < 50)
-					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 3, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(charge_count * 255 / 50, 255, 0), TRUE);
-				else if (50 <= charge_count && charge_count < 100)
-					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 3, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255 - charge_count * 255 / 50, 0), TRUE);
+				if (charge_count <= 50)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(charge_count * 255 / 50, 255, 0), TRUE);
+				else if (50 < charge_count && charge_count < 100)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255 - charge_count * 255 / 50, 0), TRUE);
 				else if (charge_count >= 100)
 					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x + CHIP_SIZE * 5 / 4 - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 0, 0), TRUE);
+
+				DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255, 255));
+				DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255, 255));
+
+				if (charge_count > 50) {
+					DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(0, 0, 0));
+				}
+				if (charge_count > 75) {
+					DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(0, 0, 0));
+				}
+
 			}
 
 			for (int i = 0; i < 100; i++) {//矢の描画
@@ -836,42 +847,42 @@ void Draw_game(Character& c, int time, int gameover_count, int point, int tips)
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
 
-	DrawFormatString(Status[0].x, Status[0].y, GetColor(255, 255, 255), Status[0].name.c_str());
-	if(c.HP >= 7) DrawBox(650, 150, 650 + 30*c.HP, 200, GetColor(0, 255, 0), TRUE);
-	else if(4 <= c.HP && c.HP < 7)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 255, 0), TRUE);
-	else if ( c.HP < 4)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 0, 0), TRUE);
+	//DrawFormatString(Status[0].x, Status[0].y, GetColor(255, 255, 255), Status[0].name.c_str());
+	//if(c.HP >= 7) DrawBox(650, 150, 650 + 30*c.HP, 200, GetColor(0, 255, 0), TRUE);
+	//else if(4 <= c.HP && c.HP < 7)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 255, 0), TRUE);
+	//else if ( c.HP < 4)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 0, 0), TRUE);
 
-	DrawFormatString(Status[1].x, Status[1].y, GetColor(255, 255, 255), Status[1].name.c_str());
-	if ((10- gameover_count) >= 7) DrawBox(650, 250, 650 + 30 * (10-gameover_count), 300, GetColor(0, 255, 0), TRUE);
-	else if (4 <= (10 - gameover_count) && (10 - gameover_count) < 7)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 255, 0), TRUE);
-	else if ((10 - gameover_count) < 4)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 0, 0), TRUE);
+	//DrawFormatString(Status[1].x, Status[1].y, GetColor(255, 255, 255), Status[1].name.c_str());
+	//if ((10- gameover_count) >= 7) DrawBox(650, 250, 650 + 30 * (10-gameover_count), 300, GetColor(0, 255, 0), TRUE);
+	//else if (4 <= (10 - gameover_count) && (10 - gameover_count) < 7)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 255, 0), TRUE);
+	//else if ((10 - gameover_count) < 4)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 0, 0), TRUE);
 
-	ostringstream score;
-	score << Status[2].name.c_str() << point;
-	DrawFormatString(Status[2].x, Status[2].y, GetColor(255, 255, 255), score.str().c_str());
+	//ostringstream score;
+	//score << Status[2].name.c_str() << point;
+	//DrawFormatString(Status[2].x, Status[2].y, GetColor(255, 255, 255), score.str().c_str());
 
-	DrawFormatString(manual[0].x, manual[0].y, GetColor(255, 255, 255), manual[0].name.c_str());
-	DrawFormatString(manual[1].x, manual[1].y, GetColor(255, 255, 255), manual[1].name.c_str());
-	DrawFormatString(manual[2].x, manual[2].y, GetColor(255, 255, 255), manual[2].name.c_str());
-	DrawFormatString(manual[3].x, manual[3].y, GetColor(255, 255, 255), manual[3].name.c_str());
-	if (tips == 0) DrawFormatString(manual[4].x, manual[4].y, GetColor(255, 255, 255), manual[4].name.c_str());
-	else if (tips == 1) DrawFormatString(manual[5].x, manual[5].y, GetColor(255, 255, 255), manual[5].name.c_str());
-	else if (tips == 2) DrawFormatString(manual[6].x, manual[6].y, GetColor(255, 255, 255), manual[6].name.c_str());
+	//DrawFormatString(manual[0].x, manual[0].y, GetColor(255, 255, 255), manual[0].name.c_str());
+	//DrawFormatString(manual[1].x, manual[1].y, GetColor(255, 255, 255), manual[1].name.c_str());
+	//DrawFormatString(manual[2].x, manual[2].y, GetColor(255, 255, 255), manual[2].name.c_str());
+	//DrawFormatString(manual[3].x, manual[3].y, GetColor(255, 255, 255), manual[3].name.c_str());
+	//if (tips == 0) DrawFormatString(manual[4].x, manual[4].y, GetColor(255, 255, 255), manual[4].name.c_str());
+	//else if (tips == 1) DrawFormatString(manual[5].x, manual[5].y, GetColor(255, 255, 255), manual[5].name.c_str());
+	//else if (tips == 2) DrawFormatString(manual[6].x, manual[6].y, GetColor(255, 255, 255), manual[6].name.c_str());
 
-	////でばっぐ用に座標を出力
-	//ostringstream position;
-	//position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
-	//ostringstream key;
-	//key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
-	////debug[0].name = position.str();
-	//ostringstream timer;
-	//timer << debug[2].name.c_str() << time/1000 << " s";
-	//ostringstream gameovercounter;
-	//gameovercounter << debug[3].name.c_str() << gameover_count;
-	//DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
-	//DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
-	//DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
-	//DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
+	//でばっぐ用に座標を出力
+	ostringstream position;
+	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
+	ostringstream key;
+	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
+	//debug[0].name = position.str();
+	ostringstream timer;
+	timer << debug[2].name.c_str() << time/1000 << " s";
+	ostringstream gameovercounter;
+	gameovercounter << debug[3].name.c_str() << gameover_count;
+	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
+	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
+	DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
+	DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
 
 }
 
