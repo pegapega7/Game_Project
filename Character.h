@@ -45,8 +45,9 @@ int ry : 右下のy座標
 メンバ
 int handle : キャラクタ画像のデータハンドル
 Pos pos : キャラクタの座標（画像の左上）
-int move_v : キャラクタを動かしている向き
+int hitflag : 当たったかどうか(0:ヒットしていない, 1:ヒットした)
 int chargeflag : キャラクタが弓をチャージしている状態か(0:チャージなし, 1:チャージしている)
+int charge_count : //チャージした時間
 int cancharge : キャラクタが矢を打てる状態か(0:打てない, 1:打てる)
 int shootflag : 矢を打っている状態(0:打っていない, 打っている)
 int HP : キャラクタのHP
@@ -64,8 +65,9 @@ public:
 	Pos pos;
 	int move_v;//移動している向き
 	int handle;
+	int hitflag;
 	int chargeflag;
-	int cancharge;
+	int charge_count;int cancharge;
 	int shootflag;
 	int aliveflag;
 	int HP;
@@ -83,6 +85,7 @@ public:
 Characterクラスの継承
 =============================
 メンバ
+int hitflag : 当たったかどうか(0:ヒットしていない, 1:ヒットした)
 int enemy_clearflag : 敵が自陣ゴールまで来たフラグ
 int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
 int enemytype : 敵の種類
@@ -101,6 +104,7 @@ class Enemy
 public:
 	Pos pos;
 	int handle;
+	int hitflag;
 	int enemy_clearflag;
 	int aliveflag;
 	int enemytype;

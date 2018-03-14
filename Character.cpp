@@ -34,7 +34,32 @@ void Character::Draw(Pos p, int handle, int chargeflag)
 		DrawRectGraph(p.x, p.y, 0, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
 	}
 	else if (chargeflag == 1) {
-		DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+		if (charge_count <= 50) {
+			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+		}
+		else if(50 < charge_count && charge_count <= 75) {
+			SetDrawBlendMode(DX_BLENDMODE_ADD, 128); 
+			DrawRectGraph(p.x + 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x - 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ƒuƒŒƒ“ƒhƒ‚[ƒh‚ðƒIƒt
+			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+		}
+		else {
+			SetDrawBlendMode(DX_BLENDMODE_ADD, 128);   
+			DrawRectGraph(p.x + 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x - 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x + 5, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x - 5, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x + 5, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			DrawRectGraph(p.x - 5, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ƒuƒŒƒ“ƒhƒ‚[ƒh‚ðƒIƒt
+			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //‰æ‘œ‚Ì•`‰æ
+		}
 	}
 }
 
@@ -69,7 +94,14 @@ int handle : ƒf[ƒ^ƒnƒ“ƒhƒ‹
 *****/
 void Enemy::Draw(Pos p, int handle)
 {
-	DrawGraph(p.x, p.y, handle, TRUE); //‰æ‘œ‚Ì•`‰æ
+	if (p.y < 9 * CHIP_SIZE) {
+		DrawGraph(p.x, p.y, handle, TRUE); //‰æ‘œ‚Ì•`‰æ
+	}
+	else {
+		SetDrawBlendMode(DX_BLENDMODE_ADD, 128);             //ƒuƒŒƒ“ƒhƒ‚[ƒh‚ð‰ÁŽZ(255/255)‚ÉÝ’è
+		DrawGraph(p.x, p.y, handle, TRUE); //‰æ‘œ‚Ì•`‰æ
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ƒuƒŒƒ“ƒhƒ‚[ƒh‚ðƒIƒt
+	}
 }
 
 /*****

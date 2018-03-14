@@ -89,14 +89,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	MapElement MapChips[4] = {
 		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
-//		{ LoadGraph("images/tree.png"), 1 }, //マップ番号２：木
-		{ LoadGraph("images/floor.png"), 0 }, //マップ番号３：床
-		{ LoadGraph("images/wall.png"), 1 }, //マップ番号４：城壁
-		{ LoadGraph("images/stairs.png"), 0 }, //マップ番号５：階段
+		{ LoadGraph("images/floor.png"), 0 }, //マップ番号２：床
+		{ LoadGraph("images/wall.png"), 1 }, //マップ番号３：城壁
+		{ LoadGraph("images/stairs.png"), 0 }, //マップ番号４：階段
 	};
 
-	int enemy_hitflag = 0;//0ならヒットなし,1ならヒット
-	int charge_count = 0;//チャージした時間
+	//int myCharacter.charge_count = 0;//チャージした時間
 
 
 	//ゲームモード選択フラグ
@@ -138,7 +136,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
 				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
 				myCharacter.move_v = 0;
+				myCharacter.hitflag = 0;
 				myCharacter.chargeflag = 0;
+				myCharacter.charge_count = 0;
 				myCharacter.aliveflag = 1;
 				myCharacter.HP = 10;
 				myCharacter.shootcount = 0;
@@ -168,6 +168,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					default:
 						break;
 					}
+					enemy[i].hitflag = 0;
 					enemy[i].move_pattern = 0;
 					enemy[i].aliveflag = 0;
 					enemy[i].enemy_clearflag = 0;
@@ -176,6 +177,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 				boss[0].handle = LoadGraph("images/boss1.png");
 				boss[0].pos = { 4 * CHIP_SIZE, CHIP_SIZE };
+				boss[0].hitflag = 0;
 				boss[0].speed = 2;
 				boss[0].aliveflag = 0;
 				boss[0].bossflag = 1;
@@ -312,7 +314,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
 							enemy[i].aliveflag = 0;
 							myCharacter.HP--;
-
+							myCharacter.hitflag = 1;
 						}
 					}
 					if (myCharacter.HP <= 0) {
@@ -330,15 +332,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					Move_enemy(boss[0]);
 
 				//矢のチャージ可能か
-				if (time - base_time[2] >= 500 && myCharacter.cancharge == 0 && charge_count == 0 && myCharacter.shootflag == 0 && myCharacter.chargeflag == 0) {//前に矢を打ってから500msで再度打てる
+				if (time - base_time[2] >= 500 && myCharacter.cancharge == 0 && myCharacter.charge_count == 0 && myCharacter.shootflag == 0 && myCharacter.chargeflag == 0) {//前に矢を打ってから500msで再度打てる
 					myCharacter.cancharge = 1;
 				}
 
 				//矢のチャージ
 				if (Key[KEY_INPUT_Z] >= 1 && myCharacter.cancharge == 1) {
 					myCharacter.chargeflag = 1;
-					charge_count = Key[KEY_INPUT_Z];
-					if (charge_count >= 100) charge_count = 100;
+					myCharacter.charge_count = Key[KEY_INPUT_Z];
+					if (myCharacter.charge_count >= 100) myCharacter.charge_count = 100;
 				}
 
 				////矢の発射
@@ -349,19 +351,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					myCharacter.cancharge = 0;
 					myCharacter.chargeflag = 0;
 					myCharacter.shootflag = 1;
-					if (charge_count < 60) {
+					if (myCharacter.charge_count < 60) {
 						myCharacter.shootcount = 0;
 					}
-					else if (50 <= charge_count && charge_count < 75) {
+					else if (50 <= myCharacter.charge_count && myCharacter.charge_count < 75) {
 						myCharacter.shootcount = 2;
 					}
-					else if (75 <= charge_count && charge_count < 100) {
+					else if (75 <= myCharacter.charge_count && myCharacter.charge_count < 100) {
 						myCharacter.shootcount = 3;
 					}
-					else if (100 == charge_count) {
+					else if (100 == myCharacter.charge_count) {
 						myCharacter.shootcount = 5;
 					}
-					charge_count = 0;
+					myCharacter.charge_count = 0;
 				}
 
 				if (myCharacter.shootflag == 1) {
@@ -402,7 +404,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 									PlaySoundMem(se_handle[3], DX_PLAYTYPE_BACK);
 									enemy[j].HP -= arrow_1[i].damage;
 									arrow_1[i].shootflag = 0;
+									enemy[j].hitflag = 1;
 								}
+
 								if (enemy[j].HP <= 0) {
 									PlaySoundMem(se_handle[4], DX_PLAYTYPE_BACK);
 									enemy[j].aliveflag = 0;//HPが0になったとき
@@ -415,6 +419,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 								PlaySoundMem(se_handle[3], DX_PLAYTYPE_BACK);
 								boss[0].HP -= arrow_1[i].damage;
 								arrow_1[i].shootflag = 0;
+								boss[0].hitflag = 1;
 							}
 							if (boss[0].HP <= 0) {
 								PlaySoundMem(se_handle[4], DX_PLAYTYPE_BACK);
@@ -439,6 +444,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
 							myCharacter.HP -= boss_atk_1[i].damage;
 							boss_atk_1[i].shootflag = 0;
+							myCharacter.hitflag = 1;
 						}
 						if (myCharacter.HP <= 0) {
 							myCharacter.aliveflag = 0;
@@ -464,50 +470,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Draw_game(myCharacter, time, gameover_count, totalpoint, tips);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
-			myCharacter.Draw(myCharacter.pos, myCharacter.handle, myCharacter.chargeflag); //自キャラの描画
+			if (myCharacter.hitflag == 0) {
+				myCharacter.Draw(myCharacter.pos, myCharacter.handle, myCharacter.chargeflag); //自キャラの描画
+			}
+			myCharacter.hitflag = 0;
 
 			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++)
 			{
 				if (enemy[i].aliveflag == 1) {//敵が生きていれば描画
-					enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
-					switch (enemy[i].enemytype) {
-					case 0:
-						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
-						break;
-					case 1:
-						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
-						break;
-					case 2:
-						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
-						break;
-					case 3:
-						DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
-						break;
-					default: break;
+					if (enemy[i].hitflag == 0) {
+						enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
+						switch (enemy[i].enemytype) {
+						case 0:
+							DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+							break;
+						case 1:
+							DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+							break;
+						case 2:
+							DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+							break;
+						case 3:
+							DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
+							break;
+						default: break;
+						}
 					}
+					enemy[i].hitflag = 0;
 				}
 			}
 			if (boss[0].aliveflag == 1) {
-				boss[0].Draw(boss[0].pos, boss[0].handle);
-				DrawBox(boss[0].pos.x, boss[0].pos.y - 5, boss[0].pos.x + 128 / boss[0].MAXHP*boss[0].HP, boss[0].pos.y, GetColor(255, 0, 0), TRUE);
+				if (boss[0].hitflag == 0) {
+					boss[0].Draw(boss[0].pos, boss[0].handle);
+					DrawBox(boss[0].pos.x, boss[0].pos.y - 5, boss[0].pos.x + 128 / boss[0].MAXHP*boss[0].HP, boss[0].pos.y, GetColor(255, 0, 0), TRUE);
+				}
 			}
+			boss[0].hitflag = 0;
 			//チャージ中のみチャージ時間の描画
 			if (myCharacter.chargeflag == 1) {
 				DrawBox(myCharacter.pos.x - CHIP_SIZE / 4, myCharacter.pos.y + CHIP_SIZE, myCharacter.pos.x + CHIP_SIZE * 5 / 4, myCharacter.pos.y + CHIP_SIZE * 5 / 4, GetColor(0, 0, 0), TRUE);
-				if (charge_count <= 50)
-					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(charge_count * 255 / 50, 255, 0), TRUE);
-				else if (50 < charge_count && charge_count < 100)
-					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255 - charge_count * 255 / 50, 0), TRUE);
-				else if (charge_count >= 100)
+				if (myCharacter.charge_count <= 50)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + myCharacter.charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(myCharacter.charge_count * 255 / 50, 255, 0), TRUE);
+				else if (50 < myCharacter.charge_count && myCharacter.charge_count < 100)
+					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + myCharacter.charge_count - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255 - myCharacter.charge_count * 255 / 50, 0), TRUE);
+				else if (myCharacter.charge_count >= 100)
 					DrawBox(myCharacter.pos.x - CHIP_SIZE / 4 + 2, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x + CHIP_SIZE * 5 / 4 - 2, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 0, 0), TRUE);
 
 				DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255, 255));
 				DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(255, 255, 255));
 
-				if (charge_count > 50) {
+				if (myCharacter.charge_count > 50) {
 					DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 48, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(0, 0, 0));
 				}
-				if (charge_count > 75) {
+				if (myCharacter.charge_count > 75) {
 					DrawLine(myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE + 3, myCharacter.pos.x - CHIP_SIZE / 4 + 73, myCharacter.pos.y + CHIP_SIZE * 5 / 4 - 3, GetColor(0, 0, 0));
 				}
 
@@ -566,7 +581,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
 				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
 				myCharacter.move_v = 0;
+				myCharacter.charge_count = 0;
 				myCharacter.chargeflag = 0;
+				myCharacter.charge_count = 0;
 				myCharacter.aliveflag = 1;
 				myCharacter.HP = 10;
 				myCharacter.shootcount = 0;
@@ -596,6 +613,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					default:
 						break;
 					}
+					enemy[i].hitflag = 0;
 					enemy[i].move_pattern = 0;
 					enemy[i].aliveflag = 0;
 					enemy[i].enemy_clearflag = 0;
@@ -604,6 +622,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 				boss[0].handle = LoadGraph("images/boss1.png");
 				boss[0].pos = { 4 * CHIP_SIZE, CHIP_SIZE };
+				boss[0].hitflag = 0;
 				boss[0].speed = 2;
 				boss[0].aliveflag = 0;
 				boss[0].bossflag = 1;
