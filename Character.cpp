@@ -1,202 +1,109 @@
 #include "Character.h"
 
 /*****
-====================
-キャラクタ座標の初期化 : Character()
-====================
+キャラクタクラスの初期化
 *****/
 Character::Character(int handle_init)
 {
 	handle = handle_init;
 }
 
-Character::~Character()
-{// デストラクタ
-		
-}
 
 /*****
-====================
-キャラクタ画像を表示 : Draw(Pos p, int handle)
-====================
-引数
-Pos p : キャラクタの座標
-int handle : データハンドル
-====================
-戻り値
-なし
-====================
-
+キャラクタ画像を表示
 *****/
-void Character::Draw(Pos p, int handle, int chargeflag)
+void Character::Draw()
 {
-	if (chargeflag == 0) {
-		DrawRectGraph(p.x, p.y, 0, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+	if (chargeflag == 0) {//待機状態の画像
+		DrawRectGraph(pos.x, pos.y, 0, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
 	}
-	else if (chargeflag == 1) {
+	else if (chargeflag == 1) {//チャージ中の画像
 		if (charge_count <= 50) {
-			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+			DrawRectGraph(pos.x, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
 		}
 		else if(50 < charge_count && charge_count <= 75) {
 			SetDrawBlendMode(DX_BLENDMODE_ADD, 128); 
-			DrawRectGraph(p.x + 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x - 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+			DrawRectGraph(pos.x + 5, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x - 5, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x, pos.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x, pos.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); 
 
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ブレンドモードをオフ
-			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);  
+			DrawRectGraph(pos.x, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
 		}
 		else {
 			SetDrawBlendMode(DX_BLENDMODE_ADD, 128);   
-			DrawRectGraph(p.x + 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x - 5, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x + 5, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x - 5, p.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x + 5, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			DrawRectGraph(p.x - 5, p.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ブレンドモードをオフ
-			DrawRectGraph(p.x, p.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); //画像の描画
+			DrawRectGraph(pos.x + 5, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); 
+			DrawRectGraph(pos.x - 5, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); 
+			DrawRectGraph(pos.x, pos.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x, pos.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x + 5, pos.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); 
+			DrawRectGraph(pos.x - 5, pos.y - 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE); 
+			DrawRectGraph(pos.x + 5, pos.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			DrawRectGraph(pos.x - 5, pos.y + 5, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);  
+			DrawRectGraph(pos.x, pos.y, CHIP_SIZE, 0, CHIP_SIZE, CHIP_SIZE, handle, TRUE, FALSE);
 		}
 	}
 }
 
 
 /*****
-====================
 敵の初期化
-====================
 *****/
 Enemy::Enemy(int enemytype_init)
 {
 	enemytype = enemytype_init;
 }
 
-Enemy::~Enemy()
-{
-	handle = -1;
-}
-
 /*****
-====================
-キャラクタ画像を表示 : Draw(Pos p, int handle)
-====================
-引数
-Pos p : キャラクタの座標
-int handle : データハンドル
-====================
-戻り値
-なし
-====================
-
+敵画像を表示 
 *****/
-void Enemy::Draw(Pos p, int handle)
+void Enemy::Draw()
 {
-	if (p.y < 9 * CHIP_SIZE) {
-		DrawGraph(p.x, p.y, handle, TRUE); //画像の描画
+	if (pos.y >= 9 * CHIP_SIZE && (pos.x >= CHIP_SIZE && pos.x < (MAP_WIDTH-1) * CHIP_SIZE)) {
+		SetDrawBlendMode(DX_BLENDMODE_ADD, 128);          
+		DrawGraph(pos.x, pos.y, handle, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
-	else {
-		SetDrawBlendMode(DX_BLENDMODE_ADD, 128);             //ブレンドモードを加算(255/255)に設定
-		DrawGraph(p.x, p.y, handle, TRUE); //画像の描画
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);           //ブレンドモードをオフ
+	else  {
+		DrawGraph(pos.x, pos.y, handle, TRUE);
 	}
 }
 
 /*****
-==============================
-技クラスの初期化(引数:画像のデータハンドル, 描画間隔)
-==============================
+矢の画像を表示
 *****/
-/*
-Skill::Skill(int handle_init, int drawinterval_init, int intervalcount_init)
+void Skill::Draw()
 {
-	handle = handle_init;
-	drawinterval = drawinterval_init;
-	intervalcount = intervalcount_init;
-}
-*/
-/*****
-==========================
-技の描画 : Skill::Draw(Pos p, int handle, int drawinterval, int direction)
-==========================
-引数
-Pos p : 表示する場所の左上座標
-Pos dest: 画像から切り取る矩形の座標
-int Width : 切り取る矩形の幅
-int Height : 切り取る矩形の高さ
-int handle : 技画像のデータハンドル
-int drawinterval : 技を描画する間隔
-
-=====================================
-戻り値なし
-==================================
-*****/
-void Skill::Draw(Pos p,int handle, int drawinterval)
-{
-	DrawGraph(p.x, p.y, handle, TRUE); //画像の描画
+	DrawGraph(pos.x, pos.y, handle, TRUE); //画像の描画
 }
 
 
 
-/*****
-==========================
-技の当たり判定: Skill::Hit(Pos p, Pos ep)
-==========================
-引数
-Pos ep : 敵キャラクタの座標
-Pos sp: 技の座標
-
-=====================================
-戻り値
-1 : ヒット
-0 : ヒットなし
-==================================
-*****/
-int Skill::Hit(Pos ep,Pos sp)
-{
-	//敵との当たり判定
-	if (ep.x+24 < sp.x + CHIP_SIZE/2 && ep.y < sp.y + CHIP_SIZE && (ep.x + 40) > sp.x && (ep.y + CHIP_SIZE) > sp.y)
-		return 1;
-	return 0;
-}
 
 /*****
-==========================
-敵と自機の当たり判定: Hit_Enemy( Character& c, Enemy& e)
-==========================
-引数
-Character& c : 自機の情報
-Enemy& e : 敵の情報
-=====================================
-1 : 敵と当たった判定
-0: 当たっていない
-==================================
+敵と自機の当たり判定
 *****/
 int Hit_Enemy(Character& c, Enemy& e)
 {
-	//敵との当たり判定
-	if (c.pos.x < e.pos.x+CHIP_SIZE/4 && c.pos.y < e.pos.y + CHIP_SIZE && (c.pos.x + CHIP_SIZE/2) > e.pos.x && (c.pos.y + CHIP_SIZE) > e.pos.y)
-		return 1;
+	if (e.enemytype == 3) {//ボスの時
+		if (c.pos.x < e.pos.x + CHIP_SIZE * 2 - CHIP_SIZE / 4 && c.pos.y < e.pos.y + CHIP_SIZE * 2 - CHIP_SIZE / 4 && (c.pos.x + CHIP_SIZE / 2) > e.pos.x && (c.pos.y + CHIP_SIZE) > e.pos.y)
+			return 1;
+
+	}
+	else {
+		if (c.pos.x < e.pos.x + CHIP_SIZE / 4 && c.pos.y < e.pos.y + CHIP_SIZE && (c.pos.x + CHIP_SIZE / 2) > e.pos.x && (c.pos.y + CHIP_SIZE) > e.pos.y)
+			return 1;
+	}
 	return 0;
 }
 
 /*****
-==========================
-弓と敵の当たり判定: Hit_Skill(Enemy& e, Skill& s)
-==========================
-引数
-Enemy& e :　敵の情報
-Skill& s: 弓・敵の攻撃の情報
-=====================================
-1 : 敵と当たった判定
-0: 当たっていない
-==================================
+弓と敵の当たり判定
 *****/
 int Hit_Skill(Enemy& e, Skill& s)
 {
-	//敵との当たり判定
 	switch (e.enemytype) {
 	case 0:
 		if (e.pos.x + 16 < s.pos.x + 40 && e.pos.y < s.pos.y + CHIP_SIZE && (e.pos.x + 48) > s.pos.x + 8 && (e.pos.y + CHIP_SIZE) > s.pos.y) 
@@ -221,36 +128,19 @@ int Hit_Skill(Enemy& e, Skill& s)
 }
 
 /*****
-==========================
-敵の攻撃と味方の当たり判定: Hit_Attack(Character& c, Skill& s)
-==========================
-引数
-Character& c :　敵の情報
-Skill& s: 弓・敵の攻撃の情報
-=====================================
-1 : 敵と当たった判定
-0: 当たっていない
-==================================
+敵の攻撃と味方の当たり判定
 *****/
 int Hit_Attack(Character& c, Skill& s)
 {
-	//敵との当たり判定
 	if (c.pos.x + 16 < s.pos.x + 40 && c.pos.y < s.pos.y + 48 && (c.pos.x + 48) > s.pos.x + 8 && (c.pos.y + CHIP_SIZE) > s.pos.y + 8)
 		return 1;
+
 	return 0;
 }
 
 
 /*****
-=====================================
-敵の種類ごとに移動先を決定 : void Move_enemy(Enemy e)
-=====================================
-引数
-Enemy e : 敵のクラス
-=====================================
-戻り値
-なし
-=====================================
+敵の種類ごとに移動先を決定
 *****/
 void Move_enemy(Enemy& e)
 {
@@ -260,23 +150,30 @@ void Move_enemy(Enemy& e)
 		e.pos.y = e.pos.y + e.speed;
 		break;
 	case 1: 
-		if (e.move_pattern == 0) {
-			e.pos.x += std::cos(135 * PI / 180)*e.speed;
-			e.pos.y += std::sin(135 * PI / 180)*e.speed;
+		if (e.pos.y < 9 * CHIP_SIZE)
+		{
+			if (e.move_pattern == 0) {
+				e.pos.x += std::cos(135 * PI / 180)*e.speed;
+				e.pos.y += std::sin(135 * PI / 180)*e.speed;
+			}
+			else if (e.move_pattern == 1) {
+				e.pos.x += std::cos(45 * PI / 180)*e.speed;
+				e.pos.y += std::sin(45 * PI / 180)*e.speed;
+			}
+			if (e.move_pattern == 0 && e.pos.x < 0)	e.move_pattern = 1;
+			else if (e.move_pattern == 1 && e.pos.x > (MAP_WIDTH - 1)*CHIP_SIZE) e.move_pattern = 0;
 		}
-		else if(e.move_pattern == 1) {
-			e.pos.x += std::cos(45 * PI / 180)*e.speed;
-			e.pos.y += std::sin(45 * PI / 180)*e.speed;
+		else
+		{
+			e.pos.y = e.pos.y + std::sin(90 * PI / 180)*e.speed;
 		}
-		if (e.move_pattern == 0 && e.pos.x < 0)	e.move_pattern = 1;
-		else if (e.move_pattern == 1 && e.pos.x > (MAP_WIDTH-1)*CHIP_SIZE) e.move_pattern = 0;
 		break;
 	case 2:
 		e.pos.y = e.pos.y + e.speed;
 		break;
 	case 3:
 	{
-		int random = GetRand(4);//4方向のランダム
+		int random = GetRand(4);
 		if (e.move_pattern == 0) {
 			e.pos.x -= e.speed;
 			switch (random) {

@@ -17,7 +17,7 @@
 
 /*****
 ===========================
-座標
+座標 : Pos
 ===========================
 int x : x座標
 int y : y座標
@@ -28,19 +28,8 @@ typedef struct {
 } Pos;
 
 /*****
-==========================
-矩形
-==========================
-int lx : 左上のx座標
-int ly : 左上のy座標
-int rx : 右下のx座標
-int ry : 右下のy座標
-*****/
-
-
-/*****
 =============================
-キャラクター用のクラス
+キャラクター用のクラス : Character
 =============================
 メンバ
 int handle : キャラクタ画像のデータハンドル
@@ -50,41 +39,43 @@ int chargeflag : キャラクタが弓をチャージしている状態か(0:チャージなし, 1:チャー
 int charge_count : //チャージした時間
 int cancharge : キャラクタが矢を打てる状態か(0:打てない, 1:打てる)
 int shootflag : 矢を打っている状態(0:打っていない, 打っている)
+int aliveflag : 生きているかどうか
 int HP : キャラクタのHP
 int shootcount : 打った矢の数を保存
 =============================
 メソッド
 Character() : キャラクタの初期設定
-void Draw(Pos p,int handle) : キャラクタ画像の表示
+void Draw() : キャラクタ画像の表示
 =============================
 *****/
 class Character
 {
 private:
 public:
-	Pos pos;
-	int move_v;//移動している向き
+	//メンバ変数
 	int handle;
+	Pos pos;
 	int hitflag;
 	int chargeflag;
-	int charge_count;int cancharge;
+	int charge_count;
+	int cancharge;
 	int shootflag;
 	int aliveflag;
 	int HP;
 	int shootcount;
 
+	//メソッド関数
 	Character(int handle_init);
-	~Character();
-	void Draw(Pos p, int handle,int chargeflag);
+	void Draw();
 };
 
 /******
 =============================
-敵用クラス
-=============================
-Characterクラスの継承
+敵用クラス : Enemy
 =============================
 メンバ
+int handle : キャラクタ画像のデータハンドル
+Pos pos : キャラクタの座標（画像の左上）
 int hitflag : 当たったかどうか(0:ヒットしていない, 1:ヒットした)
 int enemy_clearflag : 敵が自陣ゴールまで来たフラグ
 int aliveflag : 生きているかどうかのフラグ(0:倒れている状態 1:生きている状態)
@@ -97,13 +88,16 @@ int MAXHP : 敵の最大HP
 int point : 敵キャラクタのポイント
 =============================
 メソッド
+Enemy(int enemytype_init) : キャラクタの初期設定
+void Draw() : キャラクタ画像の表示
 =============================
 ******/
 class Enemy
 {
 public:
-	Pos pos;
+	//メンバ変数
 	int handle;
+	Pos pos;
 	int hitflag;
 	int enemy_clearflag;
 	int aliveflag;
@@ -114,9 +108,10 @@ public:
 	int HP;
 	int MAXHP;
 	int point;
+
+	//メソッド関数
 	Enemy(int enemytype_init);
-	~Enemy();
-	void Draw(Pos p, int handle);
+	void Draw();
 };
 
 /*****
@@ -124,19 +119,13 @@ public:
 弓用のクラス
 =============================
 メンバ
-int speed : 矢を動かすスピード（座標の変化率）
-int pos : : 矢を表示する座標
 int handle : 技画像のデータハンドル
-int drawinterval : 表示するフレーム数
-int intervalcount : 表示したフレーム数をカウント
+int pos : : 矢を表示する座標
+int speed : 矢を動かすスピード（座標の変化率）
 int shootflag : 矢が飛んでいるかどうかのフラグ(1:飛んでいる, 0:飛んでいない)
-int distance : 矢が飛んでいる距離
-int range : 矢の飛距離
-int chargetime : どれだけチャージされた矢か（飛距離に影響）
 int damage : 一発のダメージ量
 =============================
 メソッド
-Character() : キャラクタの初期設定
 void Draw(Pos p,int handle) : キャラクタ画像の表示
 =============================
 *****/
@@ -144,26 +133,19 @@ class Skill
 {
 private:
 public:
-	int speed;
-	Pos pos;
+	//メンバ変数
 	int handle;
-	int drawinterval;
-	int intervalflag;
-	int intervalcount;
+	Pos pos;
+	int speed;
 	int shootflag;
-	int distance;
-	int range;
-	int chargetime;
 	int damage;
-
-	//Skill(int handle_init, int drawinterval_init, int intervalcount_init);
-	void Draw(Pos p, int handle, int drawinterval);
-	int Hit(Pos p, Pos sp);
+	//メソッド関数
+	void Draw();
 };
 
 
-extern int Hit_Enemy( Character& c, Enemy& e);
-extern int Hit_Skill(Enemy& e, Skill& s);
-extern int Hit_Attack(Character& c, Skill& s);
-extern void Move_enemy(Enemy& e);
+extern int Hit_Enemy( Character& c, Enemy& e);	//自機と敵　　　　あたり判定
+extern int Hit_Skill(Enemy& e, Skill& s);		//敵と自機の弓矢　あたり判定
+extern int Hit_Attack(Character& c, Skill& s);	//自機と敵　　　　あたり判定
+extern void Move_enemy(Enemy& e);				//敵の移動
 #endif

@@ -14,7 +14,7 @@
 
 /*****
 ===========================
-マップチップの構造体
+マップチップの構造体 : MapElement
 ===========================
 int handle : 画像呼び出し用のデータハンドル
 int hitflag : マップごとの当たり判定 (0:通常マップ、1：通り抜け不可、２：ダメージ床(未実装))
@@ -25,7 +25,7 @@ typedef struct {
 } MapElement;
 
 
-extern void Init_map();
-extern void Draw_map(MapElement map[]);
-extern int Hit_map(MapElement map[], Character& c);
+extern void Init_map();	//マップの初期化
+extern void Draw_map(MapElement map[]); //マップの描画
+extern int Hit_map(MapElement map[], Character& c); //マップとのあたり判定
 #endif

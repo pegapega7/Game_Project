@@ -23,54 +23,61 @@ int Key[256];// キーが押されているフレーム数を格納する
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	/*****初期設定*****/
-	ChangeWindowMode(TRUE); // ウィンドウモードに設定(TRUE:ウィンドウ FALSE)
+	ChangeWindowMode(TRUE);
 	SetBackgroundColor(255, 255, 255);//画面の色を白に
 	SetGraphMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32);
-	if (DxLib_Init() == -1)		// ＤＸライブラリ初期化処理
+	if (DxLib_Init() == -1)	
 	{
-		return -1;			// エラーが起きたら直ちに終了
+		return -1;
 	}
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	int SelectNum = 0; // 現在の選択メニュー番号
 
-
-//画面用画像をロード
+	//画面用画像をロード
 	 int screen[4] =
 	{
-		LoadGraph("images/title.png"),
-		LoadGraph("images/gameover.png"),
-		LoadGraph("images/result.png"),
-		LoadGraph("images/ending.png"),
+		LoadGraph("images/title.png"),		//タイトル
+		LoadGraph("images/gameover.png"),	//ゲームオーバー
+		LoadGraph("images/result.png"),		//リザルト
+		LoadGraph("images/ending.png"),		//クリア
 	};
 
+	 //BGM
 	int bgm_handle[2] =
 	{
-		LoadSoundMem("musics/bgm/bgm_maoudamashii_fantasy10.mp3"),//タイトルBGM
-		LoadSoundMem("musics/bgm/bgm_maoudamashii_fantasy13.mp3"),//ゲーム内BGM
+		LoadSoundMem("musics/bgm/bgm_maoudamashii_fantasy10.mp3"),	//タイトルBGM
+		LoadSoundMem("musics/bgm/bgm_maoudamashii_fantasy13.mp3"),	//ゲーム内BGM
 	};
 
+	//SE
 	int se_handle[11] =
 	{
-		LoadSoundMem("musics/se/cursor10.mp3"), //メニュー選択音 : 0
-		LoadSoundMem("musics/se/decision24.mp3"), //メニュー決定音 : 1
-		LoadSoundMem("musics/se/sen_ge_byun02.mp3"),//弓を打つ音 : 2
-		LoadSoundMem("musics/se/sen_ge_ya_sasaru04.mp3"),//弓が当たる音 : 3
-		LoadSoundMem("musics/se/down1.mp3"),//敵が倒れる音 : 4
+		LoadSoundMem("musics/se/cursor10.mp3"),					//メニュー選択音 : 0
+		LoadSoundMem("musics/se/decision24.mp3"),				//メニュー決定音 : 1
+		LoadSoundMem("musics/se/sen_ge_byun02.mp3"),			//弓を打つ音 : 2
+		LoadSoundMem("musics/se/sen_ge_ya_sasaru04.mp3"),		//弓が当たる音 : 3
+		LoadSoundMem("musics/se/down1.mp3"),					//敵が倒れる音 : 4
 		LoadSoundMem("musics/se/se_maoudamashii_se_stairs.mp3"),//敵に突破されるときの音 : 5
-		LoadSoundMem("musics/se/se_maoudamashii_jingle13.mp3"),//ゲームオーバー : 6
-		LoadSoundMem("musics/se/drum-japanese1.mp3"),//結果発表 : 7
-		LoadSoundMem("musics/se/drum-japanese2.mp3"),//最終結果発表 : 8
-		LoadSoundMem("musics/se/jingle06.mp3"),//クリア : 9
-		LoadSoundMem("musics/se/kick-low1.mp3"),//敵の攻撃がヒット : 10
+		LoadSoundMem("musics/se/se_maoudamashii_jingle13.mp3"),	//ゲームオーバー : 6
+		LoadSoundMem("musics/se/drum-japanese1.mp3"),			//結果発表 : 7
+		LoadSoundMem("musics/se/drum-japanese2.mp3"),			//最終結果発表 : 8
+		LoadSoundMem("musics/se/jingle06.mp3"),					//クリア : 9
+		LoadSoundMem("musics/se/kick-low1.mp3"),				//敵の攻撃がヒット : 10
 	};
 
-	// 絵をロード
+	//マップ
+	MapElement MapChips[4] = {
+		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
+		{ LoadGraph("images/floor.png"), 0 }, //マップ番号２：床
+		{ LoadGraph("images/wall.png"), 1 }, //マップ番号３：城壁
+		{ LoadGraph("images/stairs.png"), 0 }, //マップ番号４：階段
+	};
 
+	
 	//キャラクタ
 	Character myCharacter(LoadGraph("images/mycharacter.png"));
 
-	
 	//敵
 	Enemy enemy[ENEMY_TYPE_NUM*ENEMY_NUM] = { 0,0,0,0,0, 0,0,0,0,0, 1,1,1,1,1, 1,1,1,1,1, 2,2,2,2,2, 2,2,2,2,2};
 
@@ -87,32 +94,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int boss_atk_1_handle = LoadGraph("images/boss_atk_1.png");
 
 
-	MapElement MapChips[4] = {
-		{ LoadGraph("images/grass.png"), 0 }, //マップ番号１：草
-		{ LoadGraph("images/floor.png"), 0 }, //マップ番号２：床
-		{ LoadGraph("images/wall.png"), 1 }, //マップ番号３：城壁
-		{ LoadGraph("images/stairs.png"), 0 }, //マップ番号４：階段
-	};
-
-	//int myCharacter.charge_count = 0;//チャージした時間
-
-
-	//ゲームモード選択フラグ
-	int WinFlag = 0;
+	int WinFlag = 0;				//ゲームモード選択フラグ
 	int frame_count = 0;
-	int clear_flag = 0;//クリアしたら1
+	int clear_flag = 0;	
 	int gameover_count = 0;
 	int time = 0;
-	int base_time[100];//処理の時間差
+	int base_time[100];				//処理の時間差
 	int start_time = 0;
-	int durability = 10;//耐久度
-	int totalpoint = 0;//総合ポイント
-	int minuspoint = 0;//マイナスポイント
+	int durability = 10;			//耐久度
+	int totalpoint = 0;				//総合ポイント
+	int minuspoint = 0;				//マイナスポイント
 	int cleartime = GetNowCount();
-	int tips = 0;//負けたタイミングのTIPS
-	int resultcount = 0;//結果を表示するときのカウント
+	int tips = 0;					//負けたタイミングのTIPS
+	int resultcount = 0;			//結果を表示するときのカウント
+
 	/*****メインループ*****/	
-	while (WinFlag >= 0) {//終了が押されるまで
+	while (WinFlag >= 0) {
 		/***毎ループで必要な処理***/
 		frame_count++;
 		if (frame_count == 60) frame_count = 0;
@@ -122,20 +119,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (CheckHitKey(KEY_INPUT_ESCAPE) == 1) break; //escキーが押されたとき
 		gpUpdateKey();
 		/*************************/
+
 		switch (WinFlag) {
-		case 0://メニュー画面
+		case 0: //メニュー画面
 			if (CheckSoundMem(bgm_handle[0]) == 0) {
 				PlaySoundMem(bgm_handle[0], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
-				// 音量の設定
 				ChangeVolumeSoundMem(255 * 50 / 100, bgm_handle[0]);
 			}
-			DrawGraph(0, 0, screen[0], FALSE); //タイトル画面の描画
-			WinFlag = KeyCalc_menu(SelectNum, bgm_handle, se_handle);//メニュー選択
-			Draw_menu();//メニュー描画
+			DrawGraph(0, 0, screen[0], FALSE); 
+			WinFlag = KeyCalc_menu(SelectNum, bgm_handle, se_handle);
+			Draw_menu();
 
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
 				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
-				myCharacter.move_v = 0;
 				myCharacter.hitflag = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.charge_count = 0;
@@ -150,7 +146,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					case 0:
 						enemy[i].handle = LoadGraph("images/enemy1.png");
 						enemy[i].speed = 1;
-						enemy[i].MAXHP = 3;
+						enemy[i].MAXHP = 2;
 						enemy[i].point = 100;
 						break;
 					case 1:
@@ -161,7 +157,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						break;
 					case 2:
 						enemy[i].handle = LoadGraph("images/enemy3.png");
-						enemy[i].speed = 5;
+						enemy[i].speed = 4;
 						enemy[i].MAXHP = 1;
 						enemy[i].point = 200;
 						break;
@@ -183,33 +179,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				boss[0].bossflag = 1;
 				boss[0].enemy_clearflag = 0;
 				boss[0].move_pattern = 0;
-				boss[0].MAXHP = 15;
+				boss[0].MAXHP = 30;
 				boss[0].point = 1000;
 
 
 				for (int i = 0; i < 100; i++) {
 					arrow_1[i].speed = 16;
-					arrow_1[i].intervalflag = 0;
 					arrow_1[i].handle = arrow_handle;
-					arrow_1[i].drawinterval = 10;
-					arrow_1[i].intervalcount = 0;
 					arrow_1[i].shootflag = 0;
-					arrow_1[i].distance = 0;
-					arrow_1[i].range = 0;
-					arrow_1[i].chargetime = 0;
 					arrow_1[i].damage = 1;
 				}
 
 				for (int i = 0; i < 100; i++) {
 					boss_atk_1[i].speed = 8;
-					boss_atk_1[i].intervalflag = 0;
 					boss_atk_1[i].handle = boss_atk_1_handle;
-					boss_atk_1[i].drawinterval = 10;
-					boss_atk_1[i].intervalcount = 0;
 					boss_atk_1[i].shootflag = 0;
-					boss_atk_1[i].distance = 0;
-					boss_atk_1[i].range = 0;
-					boss_atk_1[i].chargetime = 0;
 					boss_atk_1[i].damage = 3;
 				}
 				Init_map();
@@ -218,32 +202,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				for (int i = 0; i < 100; i++) {
 					base_time[i] = 0;
 				}
-				SRand(GetNowCount());//乱数の初期化
-				start_time = GetNowCount();//ゲーム開始した時刻を基準にする
+				SRand(GetNowCount());
+				start_time = GetNowCount();
 				totalpoint = 0;
 				minuspoint = 0;
 				resultcount = 0;
 				StopSoundMem(bgm_handle[0]);
 				PlaySoundMem(bgm_handle[1], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
-				// 音量の設定
 				ChangeVolumeSoundMem(255 * 50 / 100, bgm_handle[1]);
 			}
-
 			break;
-		case 1://ゲーム画面
+		case 1: //ゲーム画面
 			if (clear_flag == 0) {
 				/*********************計算部***********************/
 				time = GetNowCount() - start_time;
 				KeyCalc(myCharacter, enemy, MapChips); //自キャラのキー入力
 				if (time < 60000) {
 					if (time - base_time[0] >= 3000) {//3秒ごと
-						int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
+						int random_enemytype = GetRand(2);//登場するモンスターの種類をランダムで
 						base_time[0] = time;
 						for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 							if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
 								enemy[i].HP = enemy[i].MAXHP;
 								enemy[i].aliveflag = 1;
-								int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+								int random_enemydisppos = GetRand(9);//モンスターの登場する座標をランダムで
 								enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
 								break;
 							}
@@ -258,7 +240,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 								enemy[i].HP = enemy[i].MAXHP;
 								enemy[i].aliveflag = 1;
 
-								int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+								int random_enemydisppos = GetRand(9);//モンスターの登場する座標をランダムで
 								enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
 								break;
 							}
@@ -267,7 +249,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							if (enemy[i].aliveflag == 0 && enemy[i].enemytype == 2) {
 								enemy[i].HP = enemy[i].MAXHP;
 								enemy[i].aliveflag = 1;
-								int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+								int random_enemydisppos = GetRand(9);//モンスターの登場する座標をランダムで
 								enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
 								break;
 							}
@@ -282,13 +264,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 
 					if (time - base_time[0] >= 7000) {//7秒ごと
-						int random_enemytype = GetRand(2);//0~2までのランダムな数値を算出（登場するモンスターの種類）
+						int random_enemytype = GetRand(2);//登場するモンスターの種類をランダムで
 						base_time[0] = time;
 						for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 							if (enemy[i].aliveflag == 0 && enemy[i].enemytype == random_enemytype) {
 								enemy[i].HP = enemy[i].MAXHP;
 								enemy[i].aliveflag = 1;
-								int random_enemydisppos = GetRand(9);//0~9までのランダムな数値を算出（モンスターの登場する座標を指定）
+								int random_enemydisppos = GetRand(9);//モンスターの登場する座標をランダムで
 								enemy[i].pos = { random_enemydisppos*CHIP_SIZE, 0 };
 								break;
 							}
@@ -297,7 +279,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 					if (time - base_time[1] >= 2000) {//3秒ごと
 						base_time[1] = time;
-						for (int i = 0; i < 100; i++)//描画に使用されていない敵の弾を選ぶ
+						for (int i = 0; i < 100; i++)//ボスの攻撃
 						{
 							if (boss_atk_1[i].shootflag == 0) {
 								boss_atk_1[i].shootflag = 1;
@@ -308,28 +290,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 
-				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵とのあたり判定
-					if (myCharacter.pos.y < 10 * CHIP_SIZE) {
-						if (Hit_Enemy(myCharacter, enemy[i]) == 1 && enemy[i].aliveflag == 1) {
-							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
-							enemy[i].aliveflag = 0;
-							myCharacter.HP--;
-							myCharacter.hitflag = 1;
-						}
-					}
-					if (myCharacter.HP <= 0) {
-						myCharacter.aliveflag = 0;
-					}
-				}
-
-
-				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {//敵のタイプごとに座標を決定
+				//敵の移動
+				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
 					if (enemy[i].aliveflag == 1) {
-						Move_enemy(enemy[i]);//敵の移動先を決める
+						Move_enemy(enemy[i]);
 					}
+
 				}
-				if (boss[0].aliveflag == 1)
+				//ボスの移動
+				if (boss[0].aliveflag == 1) {
 					Move_enemy(boss[0]);
+				}
+
 
 				//矢のチャージ可能か
 				if (time - base_time[2] >= 500 && myCharacter.cancharge == 0 && myCharacter.charge_count == 0 && myCharacter.shootflag == 0 && myCharacter.chargeflag == 0) {//前に矢を打ってから500msで再度打てる
@@ -366,6 +338,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					myCharacter.charge_count = 0;
 				}
 
+				//矢の発射中
 				if (myCharacter.shootflag == 1) {
 					for (int i = 0; i < 100; i++)//描画に使用されていない矢を選ぶ
 					{
@@ -392,12 +365,47 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						}
 					}
 				}
+
+				//敵と自機のあたり判定
+				for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++) {
+					if (myCharacter.pos.y < 10 * CHIP_SIZE) {
+						if (Hit_Enemy(myCharacter, enemy[i]) == 1 && enemy[i].aliveflag == 1) {
+							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
+							enemy[i].aliveflag = 0;
+							myCharacter.HP--;
+							myCharacter.hitflag = 1;
+						}
+					}
+					else if (!(myCharacter.pos.x >= CHIP_SIZE && myCharacter.pos.x < (MAP_WIDTH - 1) * CHIP_SIZE)) {
+						if (Hit_Enemy(myCharacter, enemy[i]) == 1 && enemy[i].aliveflag == 1) {
+							PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
+							enemy[i].aliveflag = 0;
+							myCharacter.HP--;
+							myCharacter.hitflag = 1;
+						}
+					}
+					if (myCharacter.HP <= 0) {
+						myCharacter.aliveflag = 0;
+					}
+				}
+
+				//ボスと自機のあたり判定
+				if (myCharacter.pos.y < 10 * CHIP_SIZE) {
+					if (Hit_Enemy(myCharacter, boss[0]) == 1 && boss[0].aliveflag == 1) {
+						PlaySoundMem(se_handle[10], DX_PLAYTYPE_BACK);
+						myCharacter.HP = 0;
+						myCharacter.hitflag = 1;
+					}
+				}
+				if (myCharacter.HP <= 0) {
+					myCharacter.aliveflag = 0;
+				}
+
 				//矢と敵のあたり判定
 				for (int i = 0; i < 100; i++) {
 					if (arrow_1[i].shootflag == 1) {//技の発動フラグが立っているとき当たり判定
 						arrow_1[i].pos.x += cos(270 * PI / 180)*arrow_1[i].speed;
 						arrow_1[i].pos.y += sin(270 * PI / 180)*arrow_1[i].speed;
-						arrow_1[i].distance += sqrt(pow(cos(270 * PI / 180)*arrow_1[i].speed, 2.0) + pow(sin(270 * PI / 180)*arrow_1[i].speed, 2.0));
 						for (int j = 0; j < ENEMY_TYPE_NUM*ENEMY_NUM; j++) {
 							if (enemy[j].aliveflag == 1) {//敵が生きていればあたり判定
 								if (Hit_Skill(enemy[j], arrow_1[i]) == 1) {
@@ -470,16 +478,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Draw_game(myCharacter, time, gameover_count, totalpoint, tips);//ゲーム画面の描画
 			Draw_map(MapChips); //マップチップの描画
 
+			//自キャラの描画
 			if (myCharacter.hitflag == 0) {
-				myCharacter.Draw(myCharacter.pos, myCharacter.handle, myCharacter.chargeflag); //自キャラの描画
+				myCharacter.Draw();
 			}
 			myCharacter.hitflag = 0;
 
+			//敵の描画
 			for (int i = 0; i < ENEMY_TYPE_NUM*ENEMY_NUM; i++)
 			{
-				if (enemy[i].aliveflag == 1) {//敵が生きていれば描画
+				if (enemy[i].aliveflag == 1) {
 					if (enemy[i].hitflag == 0) {
-						enemy[i].Draw(enemy[i].pos, enemy[i].handle); //敵の描画
+						enemy[i].Draw();
 						switch (enemy[i].enemytype) {
 						case 0:
 							DrawBox(enemy[i].pos.x, enemy[i].pos.y - 5, enemy[i].pos.x + 64 / enemy[i].MAXHP*enemy[i].HP, enemy[i].pos.y, GetColor(255, 0, 0), TRUE);
@@ -499,13 +509,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					enemy[i].hitflag = 0;
 				}
 			}
+			//ボスの描画
 			if (boss[0].aliveflag == 1) {
 				if (boss[0].hitflag == 0) {
-					boss[0].Draw(boss[0].pos, boss[0].handle);
+					boss[0].Draw();
 					DrawBox(boss[0].pos.x, boss[0].pos.y - 5, boss[0].pos.x + 128 / boss[0].MAXHP*boss[0].HP, boss[0].pos.y, GetColor(255, 0, 0), TRUE);
 				}
 			}
 			boss[0].hitflag = 0;
+
 			//チャージ中のみチャージ時間の描画
 			if (myCharacter.chargeflag == 1) {
 				DrawBox(myCharacter.pos.x - CHIP_SIZE / 4, myCharacter.pos.y + CHIP_SIZE, myCharacter.pos.x + CHIP_SIZE * 5 / 4, myCharacter.pos.y + CHIP_SIZE * 5 / 4, GetColor(0, 0, 0), TRUE);
@@ -528,38 +540,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			}
 
-			for (int i = 0; i < 100; i++) {//矢の描画
+			//矢の描画
+			for (int i = 0; i < 100; i++) {
 				if (arrow_1[i].shootflag == 1) {
-					arrow_1[i].Draw({ arrow_1[i].pos.x, arrow_1[i].pos.y }, arrow_1[i].handle, arrow_1[i].drawinterval); //矢の描画
+					arrow_1[i].Draw(); 
 				}
 			}
 
-
-			for (int i = 0; i < 100; i++) {//敵の攻撃描画
+			//敵の攻撃描画
+			for (int i = 0; i < 100; i++) {
 				if (boss_atk_1[i].shootflag == 1) {
-					boss_atk_1[i].Draw({ boss_atk_1[i].pos.x, boss_atk_1[i].pos.y }, boss_atk_1[i].handle, boss_atk_1[i].drawinterval); //矢の描画
-
+					boss_atk_1[i].Draw();
 				}
 			}
 
+			//ゲームオーバー(自機のHP０)
 			if (myCharacter.aliveflag == 0) {
 				WinFlag = 3; SelectNum = 0; tips = 1;
 				StopSoundMem(bgm_handle[1]);
 				PlaySoundMem(se_handle[6], DX_PLAYTYPE_BACK);
-			} //キャラクタが死んでいればゲームオーバー
+			}
+			//ゲームオーバー(防衛失敗)
 			if (gameover_count >= 10) {
 				WinFlag = 3;
 				SelectNum = 0;
 				tips = 2;
 				StopSoundMem(bgm_handle[1]);
 				PlaySoundMem(se_handle[6], DX_PLAYTYPE_BACK);
-			} //ゲームオーバー
+			} 
+			//クリア
 			if (clear_flag == 1) {
 				if (CheckSoundMem(se_handle[9]) == 0 && CheckSoundMem(bgm_handle[1]) == 1) {
 					StopSoundMem(bgm_handle[1]);
 					PlaySoundMem(se_handle[9], DX_PLAYTYPE_BACK);
 				}
-				int a = CheckSoundMem(se_handle[9]);
 				if (CheckSoundMem(se_handle[9]) == 0) {
 					WinFlag = 4;
 					SelectNum = 0;
@@ -568,19 +582,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}//ボスが倒れたらクリア
 
 			break;
-		case 2:
-			DrawGraph(0, 0, screen[3], FALSE); //エンディング画像の描画
+		case 2: //クリア画面
+			DrawGraph(0, 0, screen[3], FALSE);
 			WinFlag = KeyCalc_ending(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_ending();
 			break;
-		case 3:
-			DrawGraph(0, 0, screen[1], FALSE); //ゲームオーバー画像の描画
+		case 3: //ゲームオーバー画面
+			DrawGraph(0, 0, screen[1], FALSE);
 			WinFlag = KeyCalc_gameover(SelectNum, bgm_handle, se_handle);//メニュー選択
 			Draw_gameover();
 			if (WinFlag == 0) 	StopSoundMem(se_handle[6]);
+
 			if (WinFlag == 1) {//ゲーム画面に遷移するときに初期化
 				myCharacter.pos = { 5 * CHIP_SIZE, 8 * CHIP_SIZE };
-				myCharacter.move_v = 0;
 				myCharacter.charge_count = 0;
 				myCharacter.chargeflag = 0;
 				myCharacter.charge_count = 0;
@@ -595,7 +609,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					case 0:
 						enemy[i].handle = LoadGraph("images/enemy1.png");
 						enemy[i].speed = 1;
-						enemy[i].MAXHP = 3;
+						enemy[i].MAXHP = 2;
 						enemy[i].point = 100;
 						break;
 					case 1:
@@ -606,7 +620,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						break;
 					case 2:
 						enemy[i].handle = LoadGraph("images/enemy3.png");
-						enemy[i].speed = 5;
+						enemy[i].speed = 4;
 						enemy[i].MAXHP = 1;
 						enemy[i].point = 200;
 						break;
@@ -628,33 +642,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				boss[0].bossflag = 1;
 				boss[0].enemy_clearflag = 0;
 				boss[0].move_pattern = 0;
-				boss[0].MAXHP = 15;
+				boss[0].MAXHP = 30;
 				boss[0].point = 1000;
 
 
 				for (int i = 0; i < 100; i++) {
 					arrow_1[i].speed = 16;
-					arrow_1[i].intervalflag = 0;
 					arrow_1[i].handle = arrow_handle;
-					arrow_1[i].drawinterval = 10;
-					arrow_1[i].intervalcount = 0;
 					arrow_1[i].shootflag = 0;
-					arrow_1[i].distance = 0;
-					arrow_1[i].range = 0;
-					arrow_1[i].chargetime = 0;
 					arrow_1[i].damage = 1;
 				}
 
 				for (int i = 0; i < 100; i++) {
 					boss_atk_1[i].speed = 8;
-					boss_atk_1[i].intervalflag = 0;
 					boss_atk_1[i].handle = boss_atk_1_handle;
-					boss_atk_1[i].drawinterval = 10;
-					boss_atk_1[i].intervalcount = 0;
 					boss_atk_1[i].shootflag = 0;
-					boss_atk_1[i].distance = 0;
-					boss_atk_1[i].range = 0;
-					boss_atk_1[i].chargetime = 0;
 					boss_atk_1[i].damage = 3;
 				}
 				Init_map();
@@ -671,8 +673,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				PlaySoundMem(bgm_handle[1], DX_PLAYTYPE_BACK | DX_PLAYTYPE_LOOP);
 			}
 			break;
-		case 4:
-			DrawGraph(0, 0, screen[2], FALSE); //リザルト画像の描画
+		case 4: //リザルト画面
+			DrawGraph(0, 0, screen[2], FALSE);
 			time = GetNowCount() - cleartime;
 			Draw_result(myCharacter, durability, totalpoint, minuspoint, resultcount, se_handle);
 			if (time - base_time[4] >= 1000 && CheckSoundMem(se_handle[7]) == 0 && resultcount < 4) { //1000msごとに処理
@@ -710,14 +712,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 /*****
-=====================================
 キー入力を更新する関数
-=====================================
-引数
-なし
-=====================================
-戻り値 0
-=====================================
 *****/
 int gpUpdateKey() {
 	char tmpKey[256]; // 現在のキーの入力状態を格納する
@@ -735,16 +730,7 @@ int gpUpdateKey() {
 
 
 /*****
-=====================================
-メニュー画面のキー入力 : int KeyCalc_menu(int SelectNum)
-=====================================
-引数 
-int SelectNum : 現在選択中のメニュー
-=====================================
-戻り値
-1 : ゲームスタートが選択されたとき
--1 : ゲーム終了が選択されたとき
-=====================================
+メニュー画面のキー入力 
 *****/
 int KeyCalc_menu(int SelectNum, int bgm_handle[], int se_handle[])
 {
@@ -778,15 +764,7 @@ int KeyCalc_menu(int SelectNum, int bgm_handle[], int se_handle[])
 }
 
 /*****
-=====================================
-メニューの文字を表示 : void Draw_menu()
-=====================================
-引数
-なし
-=====================================
-戻り値
-なし
-=====================================
+メニューの文字を表示 
 *****/
 void Draw_menu()
 {
@@ -799,41 +777,27 @@ void Draw_menu()
 }
 
 /*****
-=====================================
-自分のキャラクタを操作 : void KeyCalc(Character& c)
-=====================================
-引数
-Character& c : 自分のキャラクタのオブジェクト
-=====================================
-戻り値
-なし
-=====================================
+自分のキャラクタを操作 
 *****/
-
 void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 
-	//自キャラクタの移動
-	//移動可能かどうか判定
 	Pos oldp = c.pos;//移動計算前の座標保存
-	int hitenemyflag = 0;//敵との当たり判定(0:当たり判定なし, 1: 当たり判定あり)
-	if (Key[KEY_INPUT_RIGHT] >= 1) { //右キーを押されたとき
-		c.move_v = 0;
+
+	//各キーの動き
+	if (Key[KEY_INPUT_RIGHT] >= 1) { 
 	    c.pos.x += 6;
 		if (Hit_map(map, c) == 1) c.pos.x = oldp.x;
 
 	}
     if (Key[KEY_INPUT_DOWN] >= 1) {
-		c.move_v = 1;
 		c.pos.y += 6;
 		if (Hit_map(map, c) == 1) c.pos.y = oldp.y;
 	}
 	if (Key[KEY_INPUT_LEFT] >= 1) {
-		c.move_v = 2;
 		c.pos.x -= 6;
 		if (Hit_map(map, c) == 1) c.pos.x = oldp.x;
 	}
 	if (Key[KEY_INPUT_UP] >= 1) {
-		c.move_v = 3;
 		c.pos.y -= 6;
 		if (Hit_map(map, c) == 1) c.pos.y = oldp.y;
 	}
@@ -841,22 +805,14 @@ void KeyCalc(Character& c, Enemy e[], MapElement map[]) {
 	//自分のキャラクタがゲーム画面内から出さない処理
 	if (c.pos.x <= 0) c.pos.x = 0;
 	if ((MAP_WIDTH-1)*CHIP_SIZE <= c.pos.x) c.pos.x = (MAP_WIDTH-1)*CHIP_SIZE;
-	if (c.pos.y <= 8*CHIP_SIZE) c.pos.y = 8*CHIP_SIZE; //移動できる高さを制限
+	if (c.pos.y <= 0) c.pos.y = 0; //移動できる高さを制限
 	if (WINDOW_HEIGHT-CHIP_SIZE/4 <= (c.pos.y + CHIP_SIZE)) c.pos.y = (MAP_HEIGHT-1)*CHIP_SIZE- CHIP_SIZE / 4;
 }
 
 
 
 /*****
-=====================================
-ゲーム画面生成 : void Draw_game()
-=====================================
-引数
-なし
-=====================================
-戻り値
-なし
-=====================================
+ゲーム画面生成
 *****/
 void Draw_game(Character& c, int time, int gameover_count, int point, int tips)
 {
@@ -866,57 +822,47 @@ void Draw_game(Character& c, int time, int gameover_count, int point, int tips)
 	//ステータス画面用のウィンドウ
 	DrawBox(MAP_WIDTH*CHIP_SIZE, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GetColor(0,0,0), TRUE);
 
-	//DrawFormatString(Status[0].x, Status[0].y, GetColor(255, 255, 255), Status[0].name.c_str());
-	//if(c.HP >= 7) DrawBox(650, 150, 650 + 30*c.HP, 200, GetColor(0, 255, 0), TRUE);
-	//else if(4 <= c.HP && c.HP < 7)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 255, 0), TRUE);
-	//else if ( c.HP < 4)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 0, 0), TRUE);
+	DrawFormatString(Status[0].x, Status[0].y, GetColor(255, 255, 255), Status[0].name.c_str());
+	if(c.HP >= 7) DrawBox(650, 150, 650 + 30*c.HP, 200, GetColor(0, 255, 0), TRUE);
+	else if(4 <= c.HP && c.HP < 7)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 255, 0), TRUE);
+	else if ( c.HP < 4)  DrawBox(650, 150, 650 + 30 * c.HP, 200, GetColor(255, 0, 0), TRUE);
 
-	//DrawFormatString(Status[1].x, Status[1].y, GetColor(255, 255, 255), Status[1].name.c_str());
-	//if ((10- gameover_count) >= 7) DrawBox(650, 250, 650 + 30 * (10-gameover_count), 300, GetColor(0, 255, 0), TRUE);
-	//else if (4 <= (10 - gameover_count) && (10 - gameover_count) < 7)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 255, 0), TRUE);
-	//else if ((10 - gameover_count) < 4)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 0, 0), TRUE);
+	DrawFormatString(Status[1].x, Status[1].y, GetColor(255, 255, 255), Status[1].name.c_str());
+	if ((10- gameover_count) >= 7) DrawBox(650, 250, 650 + 30 * (10-gameover_count), 300, GetColor(0, 255, 0), TRUE);
+	else if (4 <= (10 - gameover_count) && (10 - gameover_count) < 7)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 255, 0), TRUE);
+	else if ((10 - gameover_count) < 4)  DrawBox(650, 250, 650 + 30 * (10 - gameover_count), 300, GetColor(255, 0, 0), TRUE);
 
-	//ostringstream score;
-	//score << Status[2].name.c_str() << point;
-	//DrawFormatString(Status[2].x, Status[2].y, GetColor(255, 255, 255), score.str().c_str());
+	ostringstream score;
+	score << Status[2].name.c_str() << point;
+	DrawFormatString(Status[2].x, Status[2].y, GetColor(255, 255, 255), score.str().c_str());
 
-	//DrawFormatString(manual[0].x, manual[0].y, GetColor(255, 255, 255), manual[0].name.c_str());
-	//DrawFormatString(manual[1].x, manual[1].y, GetColor(255, 255, 255), manual[1].name.c_str());
-	//DrawFormatString(manual[2].x, manual[2].y, GetColor(255, 255, 255), manual[2].name.c_str());
-	//DrawFormatString(manual[3].x, manual[3].y, GetColor(255, 255, 255), manual[3].name.c_str());
-	//if (tips == 0) DrawFormatString(manual[4].x, manual[4].y, GetColor(255, 255, 255), manual[4].name.c_str());
-	//else if (tips == 1) DrawFormatString(manual[5].x, manual[5].y, GetColor(255, 255, 255), manual[5].name.c_str());
-	//else if (tips == 2) DrawFormatString(manual[6].x, manual[6].y, GetColor(255, 255, 255), manual[6].name.c_str());
+	DrawFormatString(manual[0].x, manual[0].y, GetColor(255, 255, 255), manual[0].name.c_str());
+	DrawFormatString(manual[1].x, manual[1].y, GetColor(255, 255, 255), manual[1].name.c_str());
+	DrawFormatString(manual[2].x, manual[2].y, GetColor(255, 255, 255), manual[2].name.c_str());
+	DrawFormatString(manual[3].x, manual[3].y, GetColor(255, 255, 255), manual[3].name.c_str());
+	if (tips == 0) DrawFormatString(manual[4].x, manual[4].y, GetColor(255, 255, 255), manual[4].name.c_str());
+	else if (tips == 1) DrawFormatString(manual[5].x, manual[5].y, GetColor(255, 255, 255), manual[5].name.c_str());
+	else if (tips == 2) DrawFormatString(manual[6].x, manual[6].y, GetColor(255, 255, 255), manual[6].name.c_str());
 
-	//でばっぐ用に座標を出力
-	ostringstream position;
-	position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
-	ostringstream key;
-	key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
-	//debug[0].name = position.str();
-	ostringstream timer;
-	timer << debug[2].name.c_str() << time/1000 << " s";
-	ostringstream gameovercounter;
-	gameovercounter << debug[3].name.c_str() << gameover_count;
-	DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
-	DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
-	DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
-	DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
+	////でばっぐ用に座標を出力
+	//ostringstream position;
+	//position << debug[0].name.c_str() << c.pos.x << "," << c.pos.y << ")";
+	//ostringstream key;
+	//key << debug[1].name.c_str() << endl << "↑ " << Key[KEY_INPUT_UP] << " ↓ " << Key[KEY_INPUT_DOWN] << "→ " << Key[KEY_INPUT_RIGHT] << " ← " << Key[KEY_INPUT_LEFT] << " Z " << Key[KEY_INPUT_Z];
+	////debug[0].name = position.str();
+	//ostringstream timer;
+	//timer << debug[2].name.c_str() << time/1000 << " s";
+	//ostringstream gameovercounter;
+	//gameovercounter << debug[3].name.c_str() << gameover_count;
+	//DrawFormatString(debug[0].x, debug[0].y, GetColor(255, 255, 255), position.str().c_str());
+	//DrawFormatString(debug[1].x, debug[1].y, GetColor(255, 255, 255), key.str().c_str());
+	//DrawFormatString(debug[2].x, debug[2].y, GetColor(255, 255, 255), timer.str().c_str());
+	//DrawFormatString(debug[3].x, debug[3].y, GetColor(255, 255, 255), gameovercounter.str().c_str());
 
 }
 
 /*****
-=====================================
-エンディング画面のキー入力 : int KeyCalc_ending(int SelectNum)
-=====================================
-引数
-int SelectNum : 現在選択中のメニュー
-=====================================
-戻り値
-0 : ゲームスタートが選択されたとき
--1 : ゲーム終了が選択されたとき
-2 : エンディング画面の維持
-=====================================
+エンディング画面のキー入力
 *****/
 int KeyCalc_ending(int SelectNum, int bgm_handle[], int se_handle[])
 {
@@ -952,15 +898,7 @@ int KeyCalc_ending(int SelectNum, int bgm_handle[], int se_handle[])
 
 
 /*****
-=====================================
-ゲームエンディング画面 : void Draw_ending()
-=====================================
-引数
-なし
-=====================================
-戻り値
-なし
-=====================================
+ゲームエンディング画面 
 *****/
 void Draw_ending()
 {
@@ -973,17 +911,7 @@ void Draw_ending()
 }
 
 /*****
-=====================================
-ゲームオーバー画面のキー入力 : int KeyCalc_gameover(int SelectNum)
-=====================================
-引数
-int SelectNum : 現在選択中のメニュー
-=====================================
-戻り値
-0 : リトライ(再びゲームを再開する)が選択されたとき
--1 : タイトルに戻るが選択されたとき
-3 : ゲームオーバー画面の維持
-=====================================
+ゲームオーバー画面のキー入力 
 *****/
 int KeyCalc_gameover(int SelectNum, int bgm_handle[], int se_handle[])
 {
@@ -1018,15 +946,7 @@ int KeyCalc_gameover(int SelectNum, int bgm_handle[], int se_handle[])
 }
 
 /*****
-=====================================
-ゲームオーバー画面 : void Draw_gameover()
-=====================================
-引数
-なし
-=====================================
-戻り値
-なし
-=====================================
+ゲームオーバー画面
 *****/
 void Draw_gameover()
 {
@@ -1039,15 +959,7 @@ void Draw_gameover()
 }
 
 /*****
-=====================================
-結果画面 : void Draw_result()
-=====================================
-引数
-なし
-=====================================
-戻り値
-なし
-=====================================
+結果画面
 *****/
 void Draw_result(Character& c, int durability, int point, int minusp, int timing, int se_handle[])
 {
@@ -1056,71 +968,25 @@ void Draw_result(Character& c, int durability, int point, int minusp, int timing
 	SetFontSize(30); // 描画する文字列のサイズを設定
 	SetFontThickness(20); // 描画する文字列の太さを設定
 	ostringstream result;
-/*
-	if (timing < 1000) {
-		result << "Result" << endl << endl;
-		if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}
-	}
-	if (1000 <= timing && timing < 2000) {
-		result << "Result" << endl << endl << "Score" << endl;
-	}
-	if (2000 <= timing && timing < 3000) {
-		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl;
-	if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}
-	}
-	if (3000 <= timing && timing < 4000) {
-		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)";
-		if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}
-	}
-	if (4000 <= timing && timing < 6000){
-		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)" << endl << "Minus : " << minusp * 10 << "(矢の発射数×10)" << endl;
-		if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}
-	}
-	if (6000 <= timing) {
-		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)" << endl << "Minus : " << minusp * 10 << "(矢の発射数×10)" << endl << "Total : " << total;
-		PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-	}
-*/
+
 	switch (timing) {
 	case 0:
 		result << "Result" << endl << endl;
-/*
-		if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}*/
 		break;
 	case 1:
 		result << "Result" << endl << endl << "Score" << endl;
 		break;
 	case 2:
 		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl;
-		/*if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}*/
 		break;
 	case 3:
 		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)";
-		/*if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}*/
 		break;
 	case 4:
 		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)" << endl << "Minus : " << minusp * 10 << "(矢の発射数×10)" << endl;
-		/*if (CheckSoundMem(se_handle[7]) == 0) {
-			PlaySoundMem(se_handle[7], DX_PLAYTYPE_BACK);
-		}*/
 		break;
 	case 5:
 		result << "Result" << endl << endl << "Score" << endl << "Base : " << point << endl << "Bonus : " << c.HP * 100 << "(HP×100) " << durability * 100 << "(防衛度×100)" << endl << "Minus : " << minusp * 10 << "(矢の発射数×10)" << endl << "Total : " << total;
-		//PlaySoundMem(se_handle[8], DX_PLAYTYPE_BACK);
 		break;
 	default:
 		break;
